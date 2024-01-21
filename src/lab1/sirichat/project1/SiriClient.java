@@ -20,7 +20,7 @@ public class SiriClient {
 
         String hostName = "localhost";
         int portNumber = Integer.parseInt("23456");
-
+        // The above number is a port number.
         try (
                 Socket siriSocket = new Socket(hostName, portNumber);
                 PrintWriter out = new PrintWriter(siriSocket.getOutputStream(), true);

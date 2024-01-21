@@ -12,7 +12,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class SiriServer {
-
     public static void main(String[] args) throws IOException {
 
 //        if (args.length != 1) {
