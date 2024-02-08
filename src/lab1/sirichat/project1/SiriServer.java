@@ -39,7 +39,7 @@ public class SiriServer {
             outputLine =  Cipher.encryption(siriP.processInput(null)) ;
 
             out.println(outputLine);
-
+            //BEGIN SERVER WHILE
             while ((inputLine = in.readLine()) != null) {
 
                 //Decrypt Server side
@@ -52,7 +52,7 @@ public class SiriServer {
                 out.println(Cipher.encryption(outputLine));
                 if (outputLine.equalsIgnoreCase("Bye."))
                     break;
-            }
+            }//end of Server while
         } catch (IOException e) {
             System.out.println("Exception caught when trying to listen on port "
                     + portNumber + " or listening for a connection");
