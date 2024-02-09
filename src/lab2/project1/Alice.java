@@ -2,6 +2,8 @@ package lab2.project1;
 
 
 
+import lab2.Colour;
+
 import javax.crypto.*;
 
 import java.io.*;
@@ -35,43 +37,38 @@ public class Alice {
 
         ) {
 
-            Object fromBob;
-            Object fromAlice;
-
+            Object fromBob,fromAlice;
 
             int aliceNonce = Helper.getNonce();
+            System.out.println("(GENERATED) Alice's Nonce: "+aliceNonce);
 
             //Output line is encrypted
             fromAlice =  new NonceID(aliceNonce,id) ;
 
             out.writeObject(fromAlice);
 
-            while ((fromBob = in.readObject()) != null) {
+            if ((fromBob = in.readObject()) != null) {
 
+                System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM BOB: "+Colour.ANSI_RESET);
                 if (fromBob instanceof Message){
 
                     System.out.println("Nonce from Bob: "+((Message) fromBob).getNonce());
-                    System.out.println("The encrypted object is: ");
-                    for (byte b: ((Message) fromBob).getInformation()){
-                        System.out.print(b+" ");
-                    }
-                    System.out.println();
+                    System.out.println(Colour.ANSI_RED+"-ENCRYPTED-"+Colour.ANSI_RESET);
+                    System.out.println( ((Message) fromBob).getMsg());
 
 
-                    //fromBob will now be a decrypted EMessage Object
-                    Message enBobFinal = Helper.decrypt(key,((Message) fromBob).getInformation());
+                    //fromBob will now be a decrypted Message Object
+                    Message enBobFinal = Helper.decrypt(key,((Message) fromBob).getMsg());
+                    System.out.println(Colour.ANSI_CYAN+"-DECRYPTED-\n"+ Colour.ANSI_RESET+enBobFinal);
 
-                    System.out.println("The actual Object: "+enBobFinal);
-
-
-                    //Now Alice will send EMessage back
+                    //Now Alice will send Message back
                     fromAlice = Helper.encrypt(key,new NonceID(((Message) fromBob).getNonce(),id));
 
                 }
 
 
                 out.writeObject(fromAlice); ;
-                break;
+
             }
         } catch (UnknownHostException e) {
             System.err.println("Don't know about host " + hostName);

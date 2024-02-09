@@ -6,6 +6,7 @@ import java.io.*;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.Random;
 
 public class Helper {
@@ -60,31 +61,34 @@ public class Helper {
             cipher.init(Cipher.ENCRYPT_MODE,key);
 
             //This message will contain an encrypted byte array
-            return new Message(cipher.doFinal(Helper.convertToByteArray(message)));
+            return new Message(encode(cipher.doFinal(Helper.convertToByteArray(message))));
         } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException |
                  NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-        return new Message("Bad Enc");
+        return new Message("Bad Encrypt");
     }
 
 
-    public static Message decrypt(SecretKey key,byte[] encryptedBytes){
+    public static Message decrypt(SecretKey key,String encryptedBytes){
 
         try {
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE, key);
-            byte [] objDecrypt = cipher.doFinal(encryptedBytes);
-            System.out.println("The decrypted object is: ");
-            for (byte b: objDecrypt){
-                System.out.print(b+" ");
-            }
-            System.out.println();
+            byte [] objDecrypt = cipher.doFinal(decode(encryptedBytes));
+
             return Helper.convertToMessage(objDecrypt);
         } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException |
                  NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-        return new Message("Bad Dec");
+        return new Message("Bad Decrypt");
+    }
+
+    private static String encode(byte[] data) {
+        return Base64.getEncoder().encodeToString(data);
+    }
+    private static byte[] decode(String data) {
+        return Base64.getDecoder().decode(data);
     }
 }

@@ -1,6 +1,8 @@
 package lab2.project1;
 
 
+import lab2.Colour;
+
 import javax.crypto.*;
 
 import java.io.*;
@@ -17,10 +19,7 @@ public class Bob {
     private static final SecretKey key = KeyGen.getInstance().getKey();
     public static void main(String[] args) throws IOException {
 
-//        if (args.length != 1) {
-//            System.err.println("Usage: java KnockKnockServer <port number>");
-//            System.exit(1);
-//        }
+
 
         int portNumber = Integer.parseInt("23456");
 
@@ -35,29 +34,28 @@ public class Bob {
             Object inputLine, outputLine=new Message("No object");
 
             int nonceBob = Helper.getNonce();
+            System.out.println("(GENERATED) Bob's Nonce: "+nonceBob);
 
             //BEGIN SERVER WHILE
             while ((inputLine = in.readObject()) != null) {
 
+                System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM ALICE: "+Colour.ANSI_RESET);
+
                 if (inputLine instanceof NonceID){
 
-                    String id = "Bob";
-                    System.out.println("Got from Alice: "+inputLine);
+                    System.out.println(inputLine);
                     Message enObj = Helper.encrypt(key,new NonceID(((NonceID) inputLine).getNonce(),"Bob"));
                     enObj.setNonce(nonceBob);
                     outputLine = enObj;
 
                 } else if (inputLine instanceof Message) {
 
-                    System.out.println("The encrypted object is: ");
-                    for (byte b: ((Message) inputLine).getInformation()){
-                        System.out.print(b+" ");
-                    }
-                    System.out.println();
+                    System.out.println(Colour.ANSI_RED+"-ENCRYPTED-"+Colour.ANSI_RESET);
+                    System.out.println( ((Message) inputLine).getMsg());
 
-                    Message aliceFinal = Helper.decrypt(key,((Message) inputLine).getInformation());
+                    Message aliceFinal = Helper.decrypt(key,((Message) inputLine).getMsg());
 
-                    System.out.println("The actual Object: "+aliceFinal);
+                    System.out.println(Colour.ANSI_CYAN+"-DECRYPTED-\n"+Colour.ANSI_RESET+aliceFinal);
                     break;
 
                 }
