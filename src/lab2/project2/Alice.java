@@ -1,4 +1,4 @@
-package lab2.project1;
+package lab2.project2;
 
 
 
