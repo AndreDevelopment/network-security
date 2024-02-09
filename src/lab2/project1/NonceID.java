@@ -17,17 +17,13 @@ public class NonceID implements Serializable {
         return nonce;
     }
 
-    public void setNonce(int nonce) {
-        this.nonce = nonce;
-    }
+
 
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+
 
     @Override
     public String toString() {

@@ -7,8 +7,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
+
 
 
 /*
@@ -30,51 +29,48 @@ public class Bob {
                 Socket clientSocket = serverSocket.accept();
                 ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
                 ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
-//                BufferedReader in = new BufferedReader(
-//                        new InputStreamReader(clientSocket.getInputStream()));
+
         ) {
 
-            Object inputLine, outputLine=new Message("No object recv");
-            System.out.println("The Key for Bob: "+key.toString());
+            Object inputLine, outputLine=new Message("No object");
+
             int nonceBob = Helper.getNonce();
 
             //BEGIN SERVER WHILE
             while ((inputLine = in.readObject()) != null) {
 
-                //Decrypt Server side
-//                System.out.println("(ENCRYPT) Alice: "+inputLine);
-//                inputLine = Cipher.decryption(inputLine);
-
-                System.out.println("(RECV) Alice: "+inputLine);
-
                 if (inputLine instanceof NonceID){
-                    //System.out.println("Enter a message: ");
-
 
                     String id = "Bob";
-                    EMessage encryptMsg = new EMessage(key,new NonceID(((NonceID) inputLine).getNonce(), id));
+                    System.out.println("Got from Alice: "+inputLine);
+                    Message enObj = Helper.encrypt(key,new NonceID(((NonceID) inputLine).getNonce(),"Bob"));
+                    enObj.setNonce(nonceBob);
+                    outputLine = enObj;
 
-                    Cipher cipher = Cipher.getInstance("AES");
+                } else if (inputLine instanceof Message) {
 
-                    cipher.init(Cipher.ENCRYPT_MODE,key);
-                    byte[] objBytes = cipher.doFinal(Helper.convertToByteArray(encryptMsg));
+                    System.out.println("The encrypted object is: ");
+                    for (byte b: ((Message) inputLine).getInformation()){
+                        System.out.print(b+" ");
+                    }
+                    System.out.println();
 
-                    outputLine = new Message(objBytes);
+                    Message aliceFinal = Helper.decrypt(key,((Message) inputLine).getInformation());
+
+                    System.out.println("The actual Object: "+aliceFinal);
+                    break;
+
                 }
 
                 out.writeObject(outputLine);
 
-//                if (outputLine.equalsIgnoreCase("Bye."))
-//                    break;
             }//end of Server while
         } catch (IOException e) {
             System.out.println("Exception caught when trying to listen on port "
                     + portNumber + " or listening for a connection");
             System.out.println(e.getMessage());
-        } catch (ClassNotFoundException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException e) {
+        } catch (ClassNotFoundException e) {
            e.printStackTrace();
-        } catch (IllegalBlockSizeException | BadPaddingException e) {
-            throw new RuntimeException(e);
         }
     }
 }

@@ -9,7 +9,7 @@ public class KeyGen {
     private SecretKey key;
 
     private KeyGen() {
-        String secretString = "thiskeyhasexactly24bytes";
+        String secretString = "thisismysecretkey24bytes";
         key = new SecretKeySpec(secretString.getBytes(), "AES");
     }
 
@@ -23,7 +23,5 @@ public class KeyGen {
         return this.key;
     }
 
-    public void setKey(SecretKey key) {
-        this.key = key;
-    }
+
 }

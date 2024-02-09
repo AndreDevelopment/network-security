@@ -3,13 +3,11 @@ package lab2.project1;
 
 
 import javax.crypto.*;
-import javax.crypto.spec.GCMParameterSpec;
+
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
+
 
 /*
 * Alice is the Client
@@ -32,21 +30,16 @@ public class Alice {
         try (
                 Socket aliceSocket = new Socket(hostName, portNumber);
 
-
-                //PrintWriter out = new PrintWriter(aliceSocket.getOutputStream(), true);
                 ObjectOutputStream out = new ObjectOutputStream(aliceSocket.getOutputStream());
                 ObjectInputStream in = new ObjectInputStream(aliceSocket.getInputStream());
-//                BufferedReader in = new BufferedReader(
-//                        new InputStreamReader(aliceSocket.getInputStream()));
+
         ) {
-//            BufferedReader stdIn =
-//                    new BufferedReader(new InputStreamReader(System.in));
+
             Object fromBob;
             Object fromAlice;
 
-            System.out.println("The Key for Alice: "+key.toString());
+
             int aliceNonce = Helper.getNonce();
-            //System.out.println("Alice Nonce: "+aliceNonce);
 
             //Output line is encrypted
             fromAlice =  new NonceID(aliceNonce,id) ;
@@ -54,29 +47,31 @@ public class Alice {
             out.writeObject(fromAlice);
 
             while ((fromBob = in.readObject()) != null) {
-                //Decrypted message from the Server
-//                System.out.println("(ENCRYPT) Bob: " + fromBob);
-//                fromBob = Cipher.decryption(fromBob);
-
-
 
                 if (fromBob instanceof Message){
-                    Cipher cipher = Cipher.getInstance("AES");
-                    cipher.init(Cipher.DECRYPT_MODE, key);
-                    byte[] objBytes = cipher.doFinal(((Message) fromBob).getInformation());
 
-                    fromBob = Helper.convertToEMessage(objBytes);
+                    System.out.println("Nonce from Bob: "+((Message) fromBob).getNonce());
+                    System.out.println("The encrypted object is: ");
+                    for (byte b: ((Message) fromBob).getInformation()){
+                        System.out.print(b+" ");
+                    }
+                    System.out.println();
 
 
+                    //fromBob will now be a decrypted EMessage Object
+                    Message enBobFinal = Helper.decrypt(key,((Message) fromBob).getInformation());
+
+                    System.out.println("The actual Object: "+enBobFinal);
+
+
+                    //Now Alice will send EMessage back
+                    fromAlice = Helper.encrypt(key,new NonceID(((Message) fromBob).getNonce(),id));
 
                 }
 
-                System.out.println("(RECV) Bob: " + fromBob);
-//                if (fromBob.equalsIgnoreCase("Bye."))
-//                    break;
 
                 out.writeObject(fromAlice); ;
-
+                break;
             }
         } catch (UnknownHostException e) {
             System.err.println("Don't know about host " + hostName);
@@ -85,10 +80,8 @@ public class Alice {
             System.err.println("Couldn't get I/O for the connection to " +
                     hostName);
             System.exit(1);
-        } catch (ClassNotFoundException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException e) {
+        } catch (ClassNotFoundException e) {
            e.printStackTrace();
-        } catch (IllegalBlockSizeException | BadPaddingException e) {
-            throw new RuntimeException(e);
         }
     }
 
