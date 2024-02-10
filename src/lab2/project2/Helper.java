@@ -4,10 +4,7 @@ package lab2.project2;
 import javax.crypto.*;
 import java.io.*;
 
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
+import java.security.*;
 import java.util.Base64;
 import java.util.Random;
 
@@ -40,22 +37,22 @@ public class Helper {
 
     }
 
-    public static Message convertToMessage(byte[]arr)  {
+    public static String convertToNonce(byte[]arr)  {
 
         ByteArrayInputStream bis = new ByteArrayInputStream(arr);
         ObjectInput in;
         try {
             in = new ObjectInputStream(bis);
-            return (Message) in.readObject();
+            return (String) in.readObject();
         } catch (IOException  | ClassNotFoundException e) {
             e.printStackTrace();
         }
 
 
-        return null;
+        return "Bad Convert";
     }
 
-    public static Message encrypt(PublicKey key, Message msg){
+    public static String encrypt(Key key, String msg){
 
         try {
 
@@ -63,28 +60,28 @@ public class Helper {
             cipher.init(Cipher.ENCRYPT_MODE,key);
 
             //This message will contain an encrypted byte array
-            return new Message(encode(cipher.doFinal(Helper.convertToByteArray(msg))));
+            return encode(cipher.doFinal(Helper.convertToByteArray(msg)));
         } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException |
                  NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-        return new Message("Bad Encrypt");
+        return "Bad Encrypt";
     }
 
 
-    public static Message decrypt(PrivateKey key, String encryptedBytes){
+    public static String decrypt(Key key, String encryptedBytes){
 
         try {
             Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             cipher.init(Cipher.DECRYPT_MODE, key);
             byte [] objDecrypt = cipher.doFinal(decode(encryptedBytes));
 
-            return Helper.convertToMessage(objDecrypt);
+            return Helper.convertToNonce(objDecrypt);
         } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException |
                  NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-        return new Message("Bad Decrypt");
+        return "Bad Decrypt";
     }
 
     private static String encode(byte[] data) {

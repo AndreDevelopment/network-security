@@ -30,7 +30,7 @@ public class Bob {
 
         ) {
 
-            Object inputLine, outputLine=new Message("No object");
+            Object inputLine, outputLine="No object";
 
             int nonceBob = Helper.getNonce();
             System.out.println("(GENERATED) Bob's Nonce: "+nonceBob);
@@ -49,35 +49,40 @@ public class Bob {
                 else if (inputLine instanceof NonceID){
                     System.out.println(inputLine);
 
-                    //Step 1 - Encrypt private key and nonce
-                    //Object containing the Private Key & Alice's Nonce
-                    Message innerPrKN = new Message(keyGenPair.getPrivateKey(), ((NonceID) inputLine).getNonce());
-                    //This string is the encrypted version of innerPrKN
-                    String encryptedPrKN = Helper.encrypt(alicePublicKey,innerPrKN).getMsg();
+                    String prvEncrypt = Helper.encrypt(keyGenPair.getPrivateKey(),((NonceID) inputLine).getNonce()+"");
 
-                    //Step 2 - Encrypt the Public key with the inner encrypted obj
-                    //Object containing the necessary information
-                    Message outerPuK = new Message(alicePublicKey,encryptedPrKN);
-                    //Now I encrypt outerPuK, package it in a Message and add a Nonce and send it off
-                    Message temp = Helper.encrypt(alicePublicKey,outerPuK);
-                    temp.setNonce(nonceBob);
-                    outputLine = temp;
+                    int mid = prvEncrypt.length() / 2;
+                    String firstHalf = prvEncrypt.substring(0,mid);
+                    String secondHalf = prvEncrypt.substring(mid);
+
+                    String enFirstHalf = Helper.encrypt(alicePublicKey,firstHalf);
+                    String enSecondHalf = Helper.encrypt(alicePublicKey,secondHalf);
+
+                    //String pubEncrypt = Helper.encrypt(alicePublicKey,prvEncrypt);
+                    outputLine = nonceBob+enFirstHalf+enSecondHalf;
 
 
-                } else if (inputLine instanceof Message) {
+                } else if (inputLine instanceof String) {
                     //DECRYPTION PROCESS
-               
-                    //The initial encrypted Object
-                    System.out.println(Colour.ANSI_RED+"-ENCRYPTED OUTER-"+Colour.ANSI_RESET);
-                    System.out.println( ((Message) inputLine).getMsg());
+                    System.out.println(Colour.ANSI_RED+"-ENCRYPTED-"+Colour.ANSI_RESET);
+                    System.out.println(inputLine);
 
-                    //outer object decrypted
-                    Message outerAlice = Helper.decrypt(keyGenPair.getPrivateKey(),((Message) inputLine).getMsg());
-                    System.out.println(Colour.ANSI_CYAN+"-DECRYPTED OUTER-\n"+ Colour.ANSI_RESET+outerAlice);
+                    //inputLine will now be a decrypted Message Object
 
-                    //Now decrypt that inner object
-                    Message innerAlice = Helper.decrypt(keyGenPair.getPrivateKey(), outerAlice.getMsg());
-                    System.out.println(Colour.ANSI_CYAN+"\t\t-DECRYPTED INNER-\n"+ Colour.ANSI_RESET+innerAlice);
+                    int mid = ((String) inputLine).length() / 2;
+                    String firstHalf = ((String) inputLine).substring(0,mid);
+                    String secondHalf = ((String) inputLine).substring(mid);
+
+                    String deFirstHalf = Helper.decrypt(keyGenPair.getPrivateKey(),firstHalf);
+                    String deSecondHalf = Helper.decrypt(keyGenPair.getPrivateKey(),secondHalf);
+
+                    //fromBob will now be a decrypted Message Object
+                    String decryptPub = deFirstHalf+deSecondHalf;
+
+                    String decryptPrv = Helper.decrypt(alicePublicKey, decryptPub);
+                    System.out.println(Colour.ANSI_CYAN+"-DECRYPTED-"+ Colour.ANSI_RESET);
+                    System.out.println("My Decrypted Nonce: "+decryptPrv);
+
 
                     break;
 
