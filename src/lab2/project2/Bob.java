@@ -3,26 +3,25 @@ package lab2.project2;
 
 import lab2.Colour;
 
-import javax.crypto.*;
+
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-
-
+import java.security.PrivateKey;
+import java.security.PublicKey;
 
 
 /*
 * Bob will act as the server
 * */
 public class Bob {
-    private static final SecretKey key = KeyGen.getInstance().getKey();
+    private static KeyGenPair keyGenPair;
+    private static PublicKey alicePublicKey;
     public static void main(String[] args) throws IOException {
 
-
-
         int portNumber = Integer.parseInt("23456");
-
+        keyGenPair = new KeyGenPair();
         try (
                 ServerSocket serverSocket = new ServerSocket(portNumber);
                 Socket clientSocket = serverSocket.accept();
@@ -41,21 +40,45 @@ public class Bob {
 
                 System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM ALICE: "+Colour.ANSI_RESET);
 
-                if (inputLine instanceof NonceID){
+                if (inputLine instanceof PrivateKey){
+                    alicePublicKey = (PublicKey) inputLine;
+                    System.out.println("Public Key received");
 
+                    outputLine = keyGenPair.getPublicKey();
+                }
+                else if (inputLine instanceof NonceID){
                     System.out.println(inputLine);
-                    Message enObj = Helper.encrypt(key,new NonceID(((NonceID) inputLine).getNonce(),"Bob"));
-                    enObj.setNonce(nonceBob);
-                    outputLine = enObj;
+
+                    //Step 1 - Encrypt private key and nonce
+                    //Object containing the Private Key & Alice's Nonce
+                    Message innerPrKN = new Message(keyGenPair.getPrivateKey(), ((NonceID) inputLine).getNonce());
+                    //This string is the encrypted version of innerPrKN
+                    String encryptedPrKN = Helper.encrypt(alicePublicKey,innerPrKN).getMsg();
+
+                    //Step 2 - Encrypt the Public key with the inner encrypted obj
+                    //Object containing the necessary information
+                    Message outerPuK = new Message(alicePublicKey,encryptedPrKN);
+                    //Now I encrypt outerPuK, package it in a Message and add a Nonce and send it off
+                    Message temp = Helper.encrypt(alicePublicKey,outerPuK);
+                    temp.setNonce(nonceBob);
+                    outputLine = temp;
+
 
                 } else if (inputLine instanceof Message) {
-
-                    System.out.println(Colour.ANSI_RED+"-ENCRYPTED-"+Colour.ANSI_RESET);
+                    //DECRYPTION PROCESS
+               
+                    //The initial encrypted Object
+                    System.out.println(Colour.ANSI_RED+"-ENCRYPTED OUTER-"+Colour.ANSI_RESET);
                     System.out.println( ((Message) inputLine).getMsg());
 
-                    Message aliceFinal = Helper.decrypt(key,((Message) inputLine).getMsg());
+                    //outer object decrypted
+                    Message outerAlice = Helper.decrypt(keyGenPair.getPrivateKey(),((Message) inputLine).getMsg());
+                    System.out.println(Colour.ANSI_CYAN+"-DECRYPTED OUTER-\n"+ Colour.ANSI_RESET+outerAlice);
 
-                    System.out.println(Colour.ANSI_CYAN+"-DECRYPTED-\n"+Colour.ANSI_RESET+aliceFinal);
+                    //Now decrypt that inner object
+                    Message innerAlice = Helper.decrypt(keyGenPair.getPrivateKey(), outerAlice.getMsg());
+                    System.out.println(Colour.ANSI_CYAN+"\t\t-DECRYPTED INNER-\n"+ Colour.ANSI_RESET+innerAlice);
+
                     break;
 
                 }

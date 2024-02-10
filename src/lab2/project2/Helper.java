@@ -6,6 +6,8 @@ import java.io.*;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.Base64;
 import java.util.Random;
 
@@ -53,15 +55,15 @@ public class Helper {
         return null;
     }
 
-    public static Message encrypt(SecretKey key,NonceID nonceID){
+    public static Message encrypt(PublicKey key, Message msg){
 
         try {
-            Message message =  new Message(key,nonceID);
-            Cipher cipher = Cipher.getInstance("AES");
+
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             cipher.init(Cipher.ENCRYPT_MODE,key);
 
             //This message will contain an encrypted byte array
-            return new Message(encode(cipher.doFinal(Helper.convertToByteArray(message))));
+            return new Message(encode(cipher.doFinal(Helper.convertToByteArray(msg))));
         } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException |
                  NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -70,10 +72,10 @@ public class Helper {
     }
 
 
-    public static Message decrypt(SecretKey key,String encryptedBytes){
+    public static Message decrypt(PrivateKey key, String encryptedBytes){
 
         try {
-            Cipher cipher = Cipher.getInstance("AES");
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             cipher.init(Cipher.DECRYPT_MODE, key);
             byte [] objDecrypt = cipher.doFinal(decode(encryptedBytes));
 

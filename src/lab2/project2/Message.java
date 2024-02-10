@@ -1,22 +1,29 @@
 package lab2.project2;
 
-import javax.crypto.SecretKey;
+
 import java.io.Serializable;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 
 
 public class Message implements Serializable {
 
     private String msg;
-
     private int nonce;
+    private PublicKey publicKey;
+    private PrivateKey privateKey;
 
-    private SecretKey secretKey;
-    private NonceID nonceID;
 
-    public Message(SecretKey secretKey, NonceID nonceID) {
-        this.secretKey = secretKey;
-        this.nonceID = nonceID;
+    public Message(PublicKey publicKey,String msg) {
+        this.publicKey = publicKey;
+        this.msg = msg;
     }
+
+    public Message(PrivateKey privateKey,int nonce) {
+        this.privateKey = privateKey;
+        this.nonce = nonce;
+    }
+
 
 
     public Message(String msg) {
@@ -25,20 +32,20 @@ public class Message implements Serializable {
 
     }
 
-    public SecretKey getSecretKey() {
-        return secretKey;
+    public PublicKey getPublicKey() {
+        return publicKey;
     }
 
-    public void setSecretKey(SecretKey secretKey) {
-        this.secretKey = secretKey;
+    public void setPublicKey(PublicKey publicKey) {
+        this.publicKey = publicKey;
     }
 
-    public NonceID getNonceID() {
-        return nonceID;
+    public PrivateKey getPrivateKey() {
+        return privateKey;
     }
 
-    public void setNonceID(NonceID nonceID) {
-        this.nonceID = nonceID;
+    public void setPrivateKey(PrivateKey privateKey) {
+        this.privateKey = privateKey;
     }
 
     public int getNonce() {
@@ -57,11 +64,12 @@ public class Message implements Serializable {
         this.msg = msg;
     }
 
+    //TODO: Change for when certain values are null
     @Override
     public String toString() {
         return "Message{" +
-                "secretKey=" + secretKey +
-                ", nonceID=" + nonceID +
+                "publicKey=" + publicKey +
+                ", nonce=" + nonce +
                 '}';
     }
 }
