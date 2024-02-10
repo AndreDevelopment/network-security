@@ -38,13 +38,13 @@ public class Helper {
 
     }
 
-    public static Message convertToMessage(byte[]arr)  {
+    public static NonceID convertToNonceID(byte[]arr)  {
 
         ByteArrayInputStream bis = new ByteArrayInputStream(arr);
         ObjectInput in;
         try {
             in = new ObjectInputStream(bis);
-            return (Message) in.readObject();
+            return (NonceID) in.readObject();
         } catch (IOException  | ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -53,36 +53,36 @@ public class Helper {
         return null;
     }
 
-    public static Message encrypt(SecretKey key,NonceID nonceID){
+    public static String encrypt(SecretKey key,NonceID nonceID){
 
         try {
-            Message message =  new Message(key,nonceID);
+
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.ENCRYPT_MODE,key);
 
             //This message will contain an encrypted byte array
-            return new Message(encode(cipher.doFinal(Helper.convertToByteArray(message))));
+            return encode(cipher.doFinal(Helper.convertToByteArray(nonceID)));
         } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException |
                  NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-        return new Message("Bad Encrypt");
+        return "Bad Encrypt";
     }
 
 
-    public static Message decrypt(SecretKey key,String encryptedBytes){
+    public static NonceID decrypt(SecretKey key,String encryptedBytes){
 
         try {
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE, key);
             byte [] objDecrypt = cipher.doFinal(decode(encryptedBytes));
 
-            return Helper.convertToMessage(objDecrypt);
+            return convertToNonceID(objDecrypt);
         } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException |
                  NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-        return new Message("Bad Decrypt");
+        return new NonceID(0,"Bad Nonce");
     }
 
     private static String encode(byte[] data) {

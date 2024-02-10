@@ -31,7 +31,7 @@ public class Bob {
 
         ) {
 
-            Object inputLine, outputLine=new Message("No object");
+            Object inputLine, outputLine="No object";
 
             int nonceBob = Helper.getNonce();
             System.out.println("(GENERATED) Bob's Nonce: "+nonceBob);
@@ -44,16 +44,17 @@ public class Bob {
                 if (inputLine instanceof NonceID){
 
                     System.out.println(inputLine);
-                    Message enObj = Helper.encrypt(key,new NonceID(((NonceID) inputLine).getNonce(),"Bob"));
-                    enObj.setNonce(nonceBob);
-                    outputLine = enObj;
+                    String enObj = Helper.encrypt(key,new NonceID(((NonceID) inputLine).getNonce(),"Bob"));
+                    outputLine = nonceBob+enObj;
 
-                } else if (inputLine instanceof Message) {
+
+                } else if (inputLine instanceof String) {
 
                     System.out.println(Colour.ANSI_RED+"-ENCRYPTED-"+Colour.ANSI_RESET);
-                    System.out.println( ((Message) inputLine).getMsg());
+                    System.out.println(inputLine);
 
-                    Message aliceFinal = Helper.decrypt(key,((Message) inputLine).getMsg());
+
+                    NonceID aliceFinal = Helper.decrypt(key,(String)inputLine);
 
                     System.out.println(Colour.ANSI_CYAN+"-DECRYPTED-\n"+Colour.ANSI_RESET+aliceFinal);
                     break;

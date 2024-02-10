@@ -45,19 +45,22 @@ public class Alice {
             if ((fromBob = in.readObject()) != null) {
 
                 System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM BOB: "+Colour.ANSI_RESET);
-                if (fromBob instanceof Message){
+                if (fromBob instanceof String){
 
-                    System.out.println("Nonce from Bob: "+((Message) fromBob).getNonce());
                     System.out.println(Colour.ANSI_RED+"-ENCRYPTED-"+Colour.ANSI_RESET);
-                    System.out.println( ((Message) fromBob).getMsg());
+                    System.out.println(fromBob);
 
+                    int nonceFromBob = Integer.parseInt(fromBob.toString().substring(0,6));
 
+                    fromBob = fromBob.toString().substring(6);
                     //fromBob will now be a decrypted Message Object
-                    Message enBobFinal = Helper.decrypt(key,((Message) fromBob).getMsg());
-                    System.out.println(Colour.ANSI_CYAN+"-DECRYPTED-\n"+ Colour.ANSI_RESET+enBobFinal);
+                    NonceID enBobFinal = Helper.decrypt(key, (String) fromBob);
+                    System.out.println(Colour.ANSI_CYAN+"-DECRYPTED-"+ Colour.ANSI_RESET);
+                    System.out.println("Nonce from Bob: "+  nonceFromBob);
+                    System.out.println(enBobFinal);
 
                     //Now Alice will send Message back
-                    fromAlice = Helper.encrypt(key,new NonceID(((Message) fromBob).getNonce(),"Alice"));
+                    fromAlice = Helper.encrypt(key,new NonceID(nonceFromBob,"Alice"));
 
                 }
 

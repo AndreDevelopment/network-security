@@ -40,7 +40,7 @@ public class Bob {
 
                 System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM ALICE: "+Colour.ANSI_RESET);
 
-                if (inputLine instanceof PrivateKey){
+                if (inputLine instanceof PublicKey){
                     alicePublicKey = (PublicKey) inputLine;
                     System.out.println("Public Key received");
 

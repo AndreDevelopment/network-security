@@ -13,7 +13,7 @@ public class KeyGenPair {
 
         try {
             KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-            generator.initialize(1024);
+            generator.initialize(512);
             KeyPair pair = generator.generateKeyPair();
             privateKey = pair.getPrivate();
             publicKey = pair.getPublic();

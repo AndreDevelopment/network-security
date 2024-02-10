@@ -47,7 +47,7 @@ public class Alice {
             while ((fromBob = in.readObject()) != null) {
 
                 System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM BOB: "+Colour.ANSI_RESET);
-                if (fromBob instanceof PrivateKey){
+                if (fromBob instanceof PublicKey){
                     bobPublicKey = (PublicKey) fromBob;
                     System.out.println("Public Key received");
 
