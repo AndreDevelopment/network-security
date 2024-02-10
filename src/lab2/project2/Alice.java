@@ -45,20 +45,22 @@ public class Alice {
 
             while ((fromBob = in.readObject()) != null) {
 
-                System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM BOB: "+Colour.ANSI_RESET);
+                if (!(fromBob instanceof PublicKey))
+                    System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM BOB: "+Colour.ANSI_RESET);
                 if (fromBob instanceof PublicKey){
                     bobPublicKey = (PublicKey) fromBob;
-                    System.out.println("Public Key received");
+                    //System.out.println("->Public Key received");
 
                     //Alice sends her Nonce
                     fromAlice = new NonceID(aliceNonce,"Alice");
+                    System.out.println("<-Sending nonce & ID...");
                 }
 
                 else if (fromBob instanceof String){
 
                     //DECRYPTION PROCESS
-                    System.out.println(Colour.ANSI_RED+"-ENCRYPTED-"+Colour.ANSI_RESET);
-                    System.out.println(fromBob);
+                    System.out.println(Colour.ANSI_RED+"[ENCRYPTED]"+Colour.ANSI_RESET);
+                    System.out.println("->"+fromBob);
 
                     int nonceFromBob = Integer.parseInt(fromBob.toString().substring(0,6));
 
@@ -67,15 +69,15 @@ public class Alice {
                     //fromBob will now be a decrypted Message Object
                     String decryptPub = RSA.decryptLongString(keyGenPair.getPrivateKey(),(String)fromBob);
                     String decryptPrv = RSA.decrypt(bobPublicKey, decryptPub);
-                    System.out.println(Colour.ANSI_CYAN+"-DECRYPTED-"+ Colour.ANSI_RESET);
-                    System.out.println("Nonce from Bob: "+  nonceFromBob);
-                    System.out.println("My Decrypted Nonce: "+decryptPrv);
+                    System.out.println(Colour.ANSI_CYAN+"[DECRYPTED]"+ Colour.ANSI_RESET);
+                    System.out.println("->Nonce from Bob: "+  nonceFromBob);
+                    System.out.println("->My Decrypted Nonce: "+decryptPrv);
 
                     //Now Alice must encrypt
                     String prvEncrypt = RSA.encrypt(keyGenPair.getPrivateKey(),String.valueOf(nonceFromBob));
                     fromAlice = RSA.encryptLongString(bobPublicKey,prvEncrypt);
 
-
+                    System.out.println("<-Sending encrypted message...");
                     out.writeObject(fromAlice);
                     break;
                 }

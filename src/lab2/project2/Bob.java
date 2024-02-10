@@ -32,37 +32,38 @@ public class Bob {
             Object inputLine, outputLine="No object";
 
             int nonceBob = RSA.generateNonce();
-            System.out.println("(GENERATED) Bob's Nonce: "+nonceBob);
+            System.out.println("[GENERATED] Bob's Nonce: "+nonceBob);
 
             //BEGIN SERVER WHILE
             while ((inputLine = in.readObject()) != null) {
 
-                System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM ALICE: "+Colour.ANSI_RESET);
+                if (!(inputLine instanceof PublicKey))
+                    System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM ALICE: "+Colour.ANSI_RESET);
 
                 if (inputLine instanceof PublicKey){
                     alicePublicKey = (PublicKey) inputLine;
-                    System.out.println("Public Key received");
+                    //System.out.println("->Public Key received");
 
                     outputLine = keyGenPair.getPublicKey();
                 }
                 else if (inputLine instanceof NonceID){
-                    System.out.println(inputLine);
+                    System.out.println("->"+inputLine);
 
                     String prvEncrypt = RSA.encrypt(keyGenPair.getPrivateKey(),((NonceID) inputLine).getNonce()+"");
 
                     outputLine = nonceBob+RSA.encryptLongString(alicePublicKey,prvEncrypt) ;
-
+                    System.out.println("<-Sending nonce and encrypted message...");
 
                 } else if (inputLine instanceof String) {
                     //DECRYPTION PROCESS
-                    System.out.println(Colour.ANSI_RED+"-ENCRYPTED-"+Colour.ANSI_RESET);
-                    System.out.println(inputLine);
+                    System.out.println(Colour.ANSI_RED+"[ENCRYPTED]"+Colour.ANSI_RESET);
+                    System.out.println("->"+inputLine);
 
                     String decryptPub = RSA.decryptLongString(keyGenPair.getPrivateKey(),(String)inputLine);
 
                     String decryptPrv = RSA.decrypt(alicePublicKey, decryptPub);
-                    System.out.println(Colour.ANSI_CYAN+"-DECRYPTED-"+ Colour.ANSI_RESET);
-                    System.out.println("My Decrypted Nonce: "+decryptPrv);
+                    System.out.println(Colour.ANSI_CYAN+"[DECRYPTED]"+ Colour.ANSI_RESET);
+                    System.out.println("->Decrypted Nonce: "+decryptPrv);
 
                     break;
 
