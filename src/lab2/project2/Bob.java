@@ -8,7 +8,6 @@ import lab2.Colour;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 
 
@@ -32,7 +31,7 @@ public class Bob {
 
             Object inputLine, outputLine="No object";
 
-            int nonceBob = Helper.getNonce();
+            int nonceBob = RSA.generateNonce();
             System.out.println("(GENERATED) Bob's Nonce: "+nonceBob);
 
             //BEGIN SERVER WHILE
@@ -49,14 +48,14 @@ public class Bob {
                 else if (inputLine instanceof NonceID){
                     System.out.println(inputLine);
 
-                    String prvEncrypt = Helper.encrypt(keyGenPair.getPrivateKey(),((NonceID) inputLine).getNonce()+"");
+                    String prvEncrypt = RSA.encrypt(keyGenPair.getPrivateKey(),((NonceID) inputLine).getNonce()+"");
 
                     int mid = prvEncrypt.length() / 2;
                     String firstHalf = prvEncrypt.substring(0,mid);
                     String secondHalf = prvEncrypt.substring(mid);
 
-                    String enFirstHalf = Helper.encrypt(alicePublicKey,firstHalf);
-                    String enSecondHalf = Helper.encrypt(alicePublicKey,secondHalf);
+                    String enFirstHalf = RSA.encrypt(alicePublicKey,firstHalf);
+                    String enSecondHalf = RSA.encrypt(alicePublicKey,secondHalf);
 
                     //String pubEncrypt = Helper.encrypt(alicePublicKey,prvEncrypt);
                     outputLine = nonceBob+enFirstHalf+enSecondHalf;
@@ -73,13 +72,13 @@ public class Bob {
                     String firstHalf = ((String) inputLine).substring(0,mid);
                     String secondHalf = ((String) inputLine).substring(mid);
 
-                    String deFirstHalf = Helper.decrypt(keyGenPair.getPrivateKey(),firstHalf);
-                    String deSecondHalf = Helper.decrypt(keyGenPair.getPrivateKey(),secondHalf);
+                    String deFirstHalf = RSA.decrypt(keyGenPair.getPrivateKey(),firstHalf);
+                    String deSecondHalf = RSA.decrypt(keyGenPair.getPrivateKey(),secondHalf);
 
                     //fromBob will now be a decrypted Message Object
                     String decryptPub = deFirstHalf+deSecondHalf;
 
-                    String decryptPrv = Helper.decrypt(alicePublicKey, decryptPub);
+                    String decryptPrv = RSA.decrypt(alicePublicKey, decryptPub);
                     System.out.println(Colour.ANSI_CYAN+"-DECRYPTED-"+ Colour.ANSI_RESET);
                     System.out.println("My Decrypted Nonce: "+decryptPrv);
 

@@ -7,7 +7,6 @@ import lab2.Colour;
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 
 
@@ -34,7 +33,7 @@ public class Alice {
 
             Object fromBob,fromAlice;
 
-            int aliceNonce = Helper.getNonce();
+            int aliceNonce = RSA.generateNonce();
             System.out.println("(GENERATED) Alice's Nonce: "+aliceNonce);
 
 
@@ -69,25 +68,25 @@ public class Alice {
                     String firstHalf = ((String) fromBob).substring(0,mid);
                     String secondHalf = ((String) fromBob).substring(mid);
 
-                    String deFirstHalf = Helper.decrypt(keyGenPair.getPrivateKey(),firstHalf);
-                    String deSecondHalf = Helper.decrypt(keyGenPair.getPrivateKey(),secondHalf);
+                    String deFirstHalf = RSA.decrypt(keyGenPair.getPrivateKey(),firstHalf);
+                    String deSecondHalf = RSA.decrypt(keyGenPair.getPrivateKey(),secondHalf);
 
                     //fromBob will now be a decrypted Message Object
                     String decryptPub = deFirstHalf+deSecondHalf;
-                    String decryptPrv = Helper.decrypt(bobPublicKey, decryptPub);
+                    String decryptPrv = RSA.decrypt(bobPublicKey, decryptPub);
                     System.out.println(Colour.ANSI_CYAN+"-DECRYPTED-"+ Colour.ANSI_RESET);
                     System.out.println("Nonce from Bob: "+  nonceFromBob);
                     System.out.println("My Decrypted Nonce: "+decryptPrv);
 
                     //Now Alice must encrypt
-                    String prvEncrypt = Helper.encrypt(keyGenPair.getPrivateKey(),String.valueOf(nonceFromBob));
+                    String prvEncrypt = RSA.encrypt(keyGenPair.getPrivateKey(),String.valueOf(nonceFromBob));
 
                     int midEn = prvEncrypt.length() / 2;
                     String firstHalfEn = prvEncrypt.substring(0,midEn);
                     String secondHalfEn = prvEncrypt.substring(midEn);
 
-                    String enFirstHalf = Helper.encrypt(bobPublicKey,firstHalfEn);
-                    String enSecondHalf = Helper.encrypt(bobPublicKey,secondHalfEn);
+                    String enFirstHalf = RSA.encrypt(bobPublicKey,firstHalfEn);
+                    String enSecondHalf = RSA.encrypt(bobPublicKey,secondHalfEn);
                     fromAlice = enFirstHalf+enSecondHalf;
                             //Helper.encrypt(bobPublicKey,prvEncrypt);
 

@@ -8,9 +8,9 @@ import java.security.*;
 import java.util.Base64;
 import java.util.Random;
 
-public class Helper {
+public class RSA {
 
-    public static int getNonce(){
+    public static int generateNonce(){
 
         return new Random().nextInt(900000) + 100000;
     }
@@ -60,7 +60,7 @@ public class Helper {
             cipher.init(Cipher.ENCRYPT_MODE,key);
 
             //This message will contain an encrypted byte array
-            return encode(cipher.doFinal(Helper.convertToByteArray(msg)));
+            return encode(cipher.doFinal(RSA.convertToByteArray(msg)));
         } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException |
                  NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -76,7 +76,7 @@ public class Helper {
             cipher.init(Cipher.DECRYPT_MODE, key);
             byte [] objDecrypt = cipher.doFinal(decode(encryptedBytes));
 
-            return Helper.convertToNonce(objDecrypt);
+            return RSA.convertToNonce(objDecrypt);
         } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException |
                  NoSuchAlgorithmException e) {
             e.printStackTrace();

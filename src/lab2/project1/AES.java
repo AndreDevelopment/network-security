@@ -9,9 +9,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Random;
 
-public class Helper {
+public class AES {
 
-    public static int getNonce(){
+    public static int generateNonce(){
 
         return new Random().nextInt(900000) + 100000;
     }
@@ -61,7 +61,7 @@ public class Helper {
             cipher.init(Cipher.ENCRYPT_MODE,key);
 
             //This message will contain an encrypted byte array
-            return encode(cipher.doFinal(Helper.convertToByteArray(nonceID)));
+            return encode(cipher.doFinal(AES.convertToByteArray(nonceID)));
         } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException |
                  NoSuchAlgorithmException e) {
             e.printStackTrace();

@@ -33,7 +33,7 @@ public class Bob {
 
             Object inputLine, outputLine="No object";
 
-            int nonceBob = Helper.getNonce();
+            int nonceBob = AES.generateNonce();
             System.out.println("(GENERATED) Bob's Nonce: "+nonceBob);
 
             //BEGIN SERVER WHILE
@@ -44,7 +44,7 @@ public class Bob {
                 if (inputLine instanceof NonceID){
 
                     System.out.println(inputLine);
-                    String enObj = Helper.encrypt(key,new NonceID(((NonceID) inputLine).getNonce(),"Bob"));
+                    String enObj = AES.encrypt(key,new NonceID(((NonceID) inputLine).getNonce(),"Bob"));
                     outputLine = nonceBob+enObj;
 
 
@@ -54,7 +54,7 @@ public class Bob {
                     System.out.println(inputLine);
 
 
-                    NonceID aliceFinal = Helper.decrypt(key,(String)inputLine);
+                    NonceID aliceFinal = AES.decrypt(key,(String)inputLine);
 
                     System.out.println(Colour.ANSI_CYAN+"-DECRYPTED-\n"+Colour.ANSI_RESET+aliceFinal);
                     break;

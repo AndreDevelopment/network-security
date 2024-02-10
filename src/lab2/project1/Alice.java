@@ -34,7 +34,7 @@ public class Alice {
 
             Object fromBob,fromAlice;
 
-            int aliceNonce = Helper.getNonce();
+            int aliceNonce = AES.generateNonce();
             System.out.println("(GENERATED) Alice's Nonce: "+aliceNonce);
 
             //Output line is encrypted
@@ -54,13 +54,13 @@ public class Alice {
 
                     fromBob = fromBob.toString().substring(6);
                     //fromBob will now be a decrypted Message Object
-                    NonceID enBobFinal = Helper.decrypt(key, (String) fromBob);
+                    NonceID enBobFinal = AES.decrypt(key, (String) fromBob);
                     System.out.println(Colour.ANSI_CYAN+"-DECRYPTED-"+ Colour.ANSI_RESET);
                     System.out.println("Nonce from Bob: "+  nonceFromBob);
                     System.out.println(enBobFinal);
 
                     //Now Alice will send Message back
-                    fromAlice = Helper.encrypt(key,new NonceID(nonceFromBob,"Alice"));
+                    fromAlice = AES.encrypt(key,new NonceID(nonceFromBob,"Alice"));
 
                 }
 
