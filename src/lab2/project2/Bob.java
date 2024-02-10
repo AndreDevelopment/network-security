@@ -50,15 +50,7 @@ public class Bob {
 
                     String prvEncrypt = RSA.encrypt(keyGenPair.getPrivateKey(),((NonceID) inputLine).getNonce()+"");
 
-                    int mid = prvEncrypt.length() / 2;
-                    String firstHalf = prvEncrypt.substring(0,mid);
-                    String secondHalf = prvEncrypt.substring(mid);
-
-                    String enFirstHalf = RSA.encrypt(alicePublicKey,firstHalf);
-                    String enSecondHalf = RSA.encrypt(alicePublicKey,secondHalf);
-
-                    //String pubEncrypt = Helper.encrypt(alicePublicKey,prvEncrypt);
-                    outputLine = nonceBob+enFirstHalf+enSecondHalf;
+                    outputLine = nonceBob+RSA.encryptLongString(alicePublicKey,prvEncrypt) ;
 
 
                 } else if (inputLine instanceof String) {
@@ -66,22 +58,11 @@ public class Bob {
                     System.out.println(Colour.ANSI_RED+"-ENCRYPTED-"+Colour.ANSI_RESET);
                     System.out.println(inputLine);
 
-                    //inputLine will now be a decrypted Message Object
-
-                    int mid = ((String) inputLine).length() / 2;
-                    String firstHalf = ((String) inputLine).substring(0,mid);
-                    String secondHalf = ((String) inputLine).substring(mid);
-
-                    String deFirstHalf = RSA.decrypt(keyGenPair.getPrivateKey(),firstHalf);
-                    String deSecondHalf = RSA.decrypt(keyGenPair.getPrivateKey(),secondHalf);
-
-                    //fromBob will now be a decrypted Message Object
-                    String decryptPub = deFirstHalf+deSecondHalf;
+                    String decryptPub = RSA.decryptLongString(keyGenPair.getPrivateKey(),(String)inputLine);
 
                     String decryptPrv = RSA.decrypt(alicePublicKey, decryptPub);
                     System.out.println(Colour.ANSI_CYAN+"-DECRYPTED-"+ Colour.ANSI_RESET);
                     System.out.println("My Decrypted Nonce: "+decryptPrv);
-
 
                     break;
 

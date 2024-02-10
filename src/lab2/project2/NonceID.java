@@ -17,12 +17,9 @@ public class NonceID implements Serializable {
         return nonce;
     }
 
-
-
     public String getId() {
         return id;
     }
-
 
 
     @Override

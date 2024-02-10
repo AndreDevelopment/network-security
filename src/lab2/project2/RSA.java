@@ -84,6 +84,26 @@ public class RSA {
         return "Bad Decrypt";
     }
 
+    public static String encryptLongString(Key key,String msg){
+
+        int mid = msg.length() / 2;
+
+        String firstHalf = RSA.encrypt(key,msg.substring(0,mid));
+        String secondHalf = RSA.encrypt(key,msg.substring(mid));
+
+        return firstHalf+secondHalf;
+
+    }
+
+    public static String decryptLongString(Key key,String msg){
+        int mid = msg.length() / 2;
+
+        String firstHalf = RSA.decrypt(key,msg.substring(0,mid));
+        String secondHalf = RSA.decrypt(key,msg.substring(mid));
+
+        return firstHalf+secondHalf;
+    }
+
     private static String encode(byte[] data) {
         return Base64.getEncoder().encodeToString(data);
     }

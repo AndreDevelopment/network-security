@@ -64,15 +64,8 @@ public class Alice {
 
                     fromBob = fromBob.toString().substring(6);
 
-                    int mid = ((String) fromBob).length() / 2;
-                    String firstHalf = ((String) fromBob).substring(0,mid);
-                    String secondHalf = ((String) fromBob).substring(mid);
-
-                    String deFirstHalf = RSA.decrypt(keyGenPair.getPrivateKey(),firstHalf);
-                    String deSecondHalf = RSA.decrypt(keyGenPair.getPrivateKey(),secondHalf);
-
                     //fromBob will now be a decrypted Message Object
-                    String decryptPub = deFirstHalf+deSecondHalf;
+                    String decryptPub = RSA.decryptLongString(keyGenPair.getPrivateKey(),(String)fromBob);
                     String decryptPrv = RSA.decrypt(bobPublicKey, decryptPub);
                     System.out.println(Colour.ANSI_CYAN+"-DECRYPTED-"+ Colour.ANSI_RESET);
                     System.out.println("Nonce from Bob: "+  nonceFromBob);
@@ -80,15 +73,8 @@ public class Alice {
 
                     //Now Alice must encrypt
                     String prvEncrypt = RSA.encrypt(keyGenPair.getPrivateKey(),String.valueOf(nonceFromBob));
+                    fromAlice = RSA.encryptLongString(bobPublicKey,prvEncrypt);
 
-                    int midEn = prvEncrypt.length() / 2;
-                    String firstHalfEn = prvEncrypt.substring(0,midEn);
-                    String secondHalfEn = prvEncrypt.substring(midEn);
-
-                    String enFirstHalf = RSA.encrypt(bobPublicKey,firstHalfEn);
-                    String enSecondHalf = RSA.encrypt(bobPublicKey,secondHalfEn);
-                    fromAlice = enFirstHalf+enSecondHalf;
-                            //Helper.encrypt(bobPublicKey,prvEncrypt);
 
                     out.writeObject(fromAlice);
                     break;
