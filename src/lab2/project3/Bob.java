@@ -54,6 +54,7 @@ public class Bob {
                     } else {
                         System.out.println("Bob: Signature verification failed.");
                     }
+                    break;
                 }
             }
         }
