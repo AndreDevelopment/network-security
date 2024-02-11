@@ -56,13 +56,13 @@ public class Bob {
 
                 } else if (inputLine instanceof String) {
                     //DECRYPTION PROCESS
-                    System.out.println(Colour.ANSI_RED+"[ENCRYPTED]"+Colour.ANSI_RESET);
+                    System.out.println(Colour.ANSI_RED+"[ENCRYPTEDx2]"+Colour.ANSI_RESET);
                     System.out.println("->"+inputLine);
 
                     String decryptPub = RSA.decryptLongString(keyGenPair.getPrivateKey(),(String)inputLine);
 
                     String decryptPrv = RSA.decrypt(alicePublicKey, decryptPub);
-                    System.out.println(Colour.ANSI_CYAN+"[DECRYPTED]"+ Colour.ANSI_RESET);
+                    System.out.println(Colour.ANSI_CYAN+"[DECRYPTEDx2]"+ Colour.ANSI_RESET);
                     System.out.println("->Decrypted Nonce: "+decryptPrv);
 
                     break;

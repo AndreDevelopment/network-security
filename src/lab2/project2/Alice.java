@@ -59,7 +59,7 @@ public class Alice {
                 else if (fromBob instanceof String){
 
                     //DECRYPTION PROCESS
-                    System.out.println(Colour.ANSI_RED+"[ENCRYPTED]"+Colour.ANSI_RESET);
+                    System.out.println(Colour.ANSI_RED+"[ENCRYPTEDx2]"+Colour.ANSI_RESET);
                     System.out.println("->"+fromBob);
 
                     int nonceFromBob = Integer.parseInt(fromBob.toString().substring(0,6));
@@ -69,7 +69,7 @@ public class Alice {
                     //fromBob will now be a decrypted Message Object
                     String decryptPub = RSA.decryptLongString(keyGenPair.getPrivateKey(),(String)fromBob);
                     String decryptPrv = RSA.decrypt(bobPublicKey, decryptPub);
-                    System.out.println(Colour.ANSI_CYAN+"[DECRYPTED]"+ Colour.ANSI_RESET);
+                    System.out.println(Colour.ANSI_CYAN+"[DECRYPTEDx2]"+ Colour.ANSI_RESET);
                     System.out.println("->Nonce from Bob: "+  nonceFromBob);
                     System.out.println("->My Decrypted Nonce: "+decryptPrv);
 

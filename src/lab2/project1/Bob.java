@@ -44,6 +44,7 @@ public class Bob {
                 if (inputLine instanceof NonceID){
 
                     System.out.println("->"+inputLine);
+                    //Getting ready to encrypt
                     String enObj = AES.encrypt(key,new NonceID(((NonceID) inputLine).getNonce(),"Bob"));
                     outputLine = nonceBob+enObj;
                     System.out.println("<-Sending nonce and encrypted message...");
