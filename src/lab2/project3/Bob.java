@@ -37,8 +37,7 @@ public class Bob {
             while ((receivedObject = in.readObject()) != null) {
 
                 // Only true if rcvd object is an instance of MsgWithSig.
-                if (receivedObject instanceof MessageWithSignature) {
-                    MessageWithSignature receivedMessage = (MessageWithSignature) receivedObject;
+                if (receivedObject instanceof MessageWithSignature receivedMessage) {
                     String message = receivedMessage.getMessage();
                     byte[] signature = receivedMessage.getSignature();
 
