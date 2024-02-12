@@ -1,4 +1,4 @@
-// Bob
+// Bob class
 package lab2.project3;
 
 import lab2.Colour;
@@ -36,31 +36,35 @@ public class Bob {
 
             while ((receivedObject = in.readObject()) != null) {
 
-                // Only true if rcvd object is an instance of MsgWithSig.
                 if (receivedObject instanceof MessageWithSignature) {
                     MessageWithSignature receivedMessage = (MessageWithSignature) receivedObject;
                     String message = receivedMessage.getMessage();
                     byte[] signature = receivedMessage.getSignature();
+                    long timestamp = receivedMessage.getTimestamp();
 
-
-                    System.out.println(Colour.ANSI_PURPLE + "ALice --> Bob: Received Message: " + message + Colour.ANSI_RESET);
+                    System.out.println(Colour.ANSI_PURPLE + "Alice --> Bob: Received Message: " + message + Colour.ANSI_RESET);
                     System.out.println(Colour.ANSI_GREEN + "Alice --> Bob: Received Signature: " + bytesToHex(signature) + Colour.ANSI_RESET);
+                    System.out.println(Colour.ANSI_CYAN + "Alice --> Bob: Received Timestamp: " + timestamp + Colour.ANSI_RESET);
 
-                    // Verifying the signature using Alice's public key
-                    if (verifySignature(message, signature, alicePublicKey)) {
-                        //System.out.println("Bob: Signature verification successful.");
-                        System.out.println(Colour.ANSI_GREEN + "Alice --> Bob: Signature verification successful." + Colour.ANSI_RESET);
-                        System.out.println(Colour.ANSI_GREEN + "Alice --> Bob: Received Message Verified: " + message + Colour.ANSI_RESET);
+                    // max time allowed to be elapsed --> 5 sec
+                    if (vertifyTimestamp(timestamp, 5000)) {
+                        // Verifying the signature using Alice's public key
+                        if (verifySignature(message, signature, alicePublicKey)) {
+                            System.out.println(Colour.ANSI_GREEN + "Alice --> Bob: Signature verification successful." + Colour.ANSI_RESET);
+                            System.out.println(Colour.ANSI_GREEN + "Alice --> Bob: Received Message Verified: " + message + Colour.ANSI_RESET);
+                            System.out.println(Colour.ANSI_GREEN + "No attack detected, message accepted!" + Colour.ANSI_RESET);
+                        } else {
+                            System.out.println(Colour.ANSI_RED + "Bob: Signature verification failed." + Colour.ANSI_RESET);
+                        }
+                        break;
                     } else {
-                        System.out.println("Bob: Signature verification failed.");
+                        System.out.println(Colour.ANSI_RED + "Bob: Replay attack detected. Ignoring the message." + Colour.ANSI_RESET);
                     }
-                    break;
                 }
             }
         }
     }
 
-    // Signature verification
     private static boolean verifySignature(String message, byte[] signature, PublicKey publicKey) {
         try {
             Signature sign = Signature.getInstance("SHA256withRSA");
@@ -73,7 +77,13 @@ public class Bob {
         return false;
     }
 
-    // convert bytes to hexadecimal string
+    private static boolean vertifyTimestamp(long timestamp, long maxAllowedTime) {
+        long currentTime = System.currentTimeMillis();
+        // allowing max time diff of 5 sec
+        long tolerance = 5000;
+        return Math.abs(currentTime - timestamp) <= tolerance && (currentTime - timestamp) <= maxAllowedTime;
+    }
+
     private static String bytesToHex(byte[] bytes) {
         StringBuilder hexString = new StringBuilder();
         for (byte b : bytes) {
