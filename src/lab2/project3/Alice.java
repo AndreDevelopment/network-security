@@ -40,6 +40,13 @@ public class Alice {
 
             // Message With Signature and Timestamp
             MessageWithSignature messageWithSignature = new MessageWithSignature(message, signature, timestamp);
+//            try {
+//                // Pause for 6 seconds
+//                Thread.sleep(6000);
+//            } catch (InterruptedException e) {
+//                // Handle exception
+//                e.printStackTrace();
+//            }
             out.writeObject(messageWithSignature);
 
         } catch (UnknownHostException e) {
