@@ -16,7 +16,6 @@ public class Alice {
         int portNumber = 23456;
 
         keyGenPair = new KeyGenPair();
-        // The public key below will be sent to bob, so that he can verify.
         alicePrivateKey = keyGenPair.getPrivateKey();
         alicePublicKey = keyGenPair.getPublicKey();
 
@@ -27,17 +26,20 @@ public class Alice {
             out.writeObject(alicePublicKey);
 
             // Message M --> will be sent along with signature to Bob.
-            String message = "Hey, Nigga Booby!";
+            String message = "Hey Bob, trying to send a message.!";
 
             // Signature --> Sign(M)
-            // Will be a byte sized array again :(
             byte[] signature = sign(message, alicePrivateKey);
+
+            // we will send current time in milli-second to bob.
+            long timestamp = System.currentTimeMillis();
 
             System.out.println(Colour.ANSI_PURPLE +"Alice: Sent Message: " + message + Colour.ANSI_RESET);
             System.out.println(Colour.ANSI_GREEN + "Alice: Sent Signature: " + bytesToHex(signature) + Colour.ANSI_RESET);
+            System.out.println(Colour.ANSI_CYAN + "Alice: Sent Timestamp: " + timestamp + Colour.ANSI_RESET);
 
-            // Message With Signature
-            MessageWithSignature messageWithSignature = new MessageWithSignature(message, signature);
+            // Message With Signature and Timestamp
+            MessageWithSignature messageWithSignature = new MessageWithSignature(message, signature, timestamp);
             out.writeObject(messageWithSignature);
 
         } catch (UnknownHostException e) {
@@ -49,7 +51,6 @@ public class Alice {
         }
     }
 
-    // signature
     private static byte[] sign(String message, PrivateKey privateKey) {
         try {
             Signature signature = Signature.getInstance("SHA256withRSA");
@@ -62,7 +63,6 @@ public class Alice {
         return null;
     }
 
-    // convert bytes to hexadecimal string
     private static String bytesToHex(byte[] bytes) {
         StringBuilder hexString = new StringBuilder();
         for (byte b : bytes) {
