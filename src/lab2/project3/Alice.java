@@ -29,24 +29,24 @@ public class Alice {
             String message = "Hey Bob, trying to send a message.!";
 
             // Signature --> Sign(M)
-            byte[] signature = sign(message, alicePrivateKey);
+            byte[] signature = Helper.sign(message, alicePrivateKey);
 
             // we will send current time in milli-second to bob.
             long timestamp = System.currentTimeMillis();
 
             System.out.println(Colour.ANSI_PURPLE +"Alice: Sent Message: " + message + Colour.ANSI_RESET);
-            System.out.println(Colour.ANSI_GREEN + "Alice: Sent Signature: " + bytesToHex(signature) + Colour.ANSI_RESET);
+            System.out.println(Colour.ANSI_GREEN + "Alice: Sent Signature: " + Helper.bytesToHex(signature) + Colour.ANSI_RESET);
             System.out.println(Colour.ANSI_CYAN + "Alice: Sent Timestamp: " + timestamp + Colour.ANSI_RESET);
 
             // Message With Signature and Timestamp
             MessageWithSignature messageWithSignature = new MessageWithSignature(message, signature, timestamp);
-//            try {
-//                // Pause for 6 seconds
-//                Thread.sleep(6000);
-//            } catch (InterruptedException e) {
-//                // Handle exception
-//                e.printStackTrace();
-//            }
+            try {
+                // Pause for 6 seconds
+                Thread.sleep(6000);
+            } catch (InterruptedException e) {
+                // Handle exception
+                e.printStackTrace();
+            }
             out.writeObject(messageWithSignature);
 
         } catch (UnknownHostException e) {
@@ -58,23 +58,5 @@ public class Alice {
         }
     }
 
-    private static byte[] sign(String message, PrivateKey privateKey) {
-        try {
-            Signature signature = Signature.getInstance("SHA256withRSA");
-            signature.initSign(privateKey);
-            signature.update(message.getBytes());
-            return signature.sign();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
-    private static String bytesToHex(byte[] bytes) {
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : bytes) {
-            hexString.append(String.format("%02X", b));
-        }
-        return hexString.toString();
-    }
 }

@@ -36,9 +36,7 @@ public class Bob {
 
             while ((receivedObject = in.readObject()) != null) {
 
-
                 // Only true if rcvd object is an instance of MsgWithSig.
-
 
                 if (receivedObject instanceof MessageWithSignature) {
                     MessageWithSignature receivedMessage = (MessageWithSignature) receivedObject;
@@ -48,13 +46,13 @@ public class Bob {
                     long timestamp = receivedMessage.getTimestamp();
 
                     System.out.println(Colour.ANSI_PURPLE + "Alice --> Bob: Received Message: " + message + Colour.ANSI_RESET);
-                    System.out.println(Colour.ANSI_GREEN + "Alice --> Bob: Received Signature: " + bytesToHex(signature) + Colour.ANSI_RESET);
+                    System.out.println(Colour.ANSI_GREEN + "Alice --> Bob: Received Signature: " + Helper.bytesToHex(signature) + Colour.ANSI_RESET);
                     System.out.println(Colour.ANSI_CYAN + "Alice --> Bob: Received Timestamp: " + timestamp + Colour.ANSI_RESET);
 
                     // max time allowed to be elapsed --> 5 sec
-                    if (verifyTimestamp(timestamp, 5000)) {
+                    if (Helper.verifyTimestamp(timestamp, 5000)) {
                         // Verifying the signature using Alice's public key
-                        if (verifySignature(message, signature, alicePublicKey)) {
+                        if (Helper.verifySignature(message, signature, alicePublicKey)) {
                             System.out.println(Colour.ANSI_GREEN + "Alice --> Bob: Signature verification successful." + Colour.ANSI_RESET);
                             System.out.println(Colour.ANSI_GREEN + "Alice --> Bob: Received Message Verified: " + message + Colour.ANSI_RESET);
                             System.out.println(Colour.ANSI_GREEN + "No attack detected, message accepted!" + Colour.ANSI_RESET);
@@ -68,36 +66,11 @@ public class Bob {
                         break;
                     }
                 }//end of instance of MessageSig
-            }
-        }
-    }
+            }//end of while
+        }//end of try
+    }//main method
 
-    private static boolean verifySignature(String message, byte[] signature, PublicKey publicKey) {
-        try {
-            Signature sign = Signature.getInstance("SHA256withRSA");
-            sign.initVerify(publicKey);
-            sign.update(message.getBytes());
-            return sign.verify(signature);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
 
-    private static boolean verifyTimestamp(long timestamp, long maxAllowedTime) {
-        long currentTime = System.currentTimeMillis();
-        // allowing max time diff of 5 sec
-        //long tolerance = 5000;
-        return Math.abs(currentTime - timestamp) <= maxAllowedTime;
-    }
-
-    private static String bytesToHex(byte[] bytes) {
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : bytes) {
-            hexString.append(String.format("%02X", b));
-        }
-        return hexString.toString();
-    }
 }
 
 
