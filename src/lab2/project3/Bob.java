@@ -52,18 +52,20 @@ public class Bob {
                     System.out.println(Colour.ANSI_CYAN + "Alice --> Bob: Received Timestamp: " + timestamp + Colour.ANSI_RESET);
 
                     // max time allowed to be elapsed --> 5 sec
-                    if (vertifyTimestamp(timestamp, 5000)) {
+                    if (verifyTimestamp(timestamp, 5000)) {
                         // Verifying the signature using Alice's public key
                         if (verifySignature(message, signature, alicePublicKey)) {
                             System.out.println(Colour.ANSI_GREEN + "Alice --> Bob: Signature verification successful." + Colour.ANSI_RESET);
                             System.out.println(Colour.ANSI_GREEN + "Alice --> Bob: Received Message Verified: " + message + Colour.ANSI_RESET);
                             System.out.println(Colour.ANSI_GREEN + "No attack detected, message accepted!" + Colour.ANSI_RESET);
+                            break;
                         } else {
                             System.out.println(Colour.ANSI_RED + "Bob: Signature verification failed." + Colour.ANSI_RESET);
                         }
-                        break;
+
                     } else {
                         System.out.println(Colour.ANSI_RED + "Bob: Replay attack detected. Ignoring the message." + Colour.ANSI_RESET);
+                        break;
                     }
                 }//end of instance of MessageSig
             }
@@ -82,11 +84,11 @@ public class Bob {
         return false;
     }
 
-    private static boolean vertifyTimestamp(long timestamp, long maxAllowedTime) {
+    private static boolean verifyTimestamp(long timestamp, long maxAllowedTime) {
         long currentTime = System.currentTimeMillis();
         // allowing max time diff of 5 sec
-        long tolerance = 5000;
-        return Math.abs(currentTime - timestamp) <= tolerance && (currentTime - timestamp) <= maxAllowedTime;
+        //long tolerance = 5000;
+        return Math.abs(currentTime - timestamp) <= maxAllowedTime;
     }
 
     private static String bytesToHex(byte[] bytes) {
