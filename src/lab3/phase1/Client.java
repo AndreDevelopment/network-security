@@ -12,6 +12,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.PublicKey;
+import java.util.Scanner;
 
 public class Client {
 
@@ -34,7 +35,9 @@ public class Client {
         ) {
 
             Object fromKDCServer,fromClient;
-
+            Scanner scan = new Scanner(System.in);
+            System.out.println("Enter the client ID: ");
+            String clientID = scan.nextLine();
 
             //Sending the Client public key
             fromClient = keys.getPublicKey();
@@ -47,7 +50,7 @@ public class Client {
 //                System.out.println("Got the key:  "+fromKDCServer);
 
                 serverPublicKey = (PublicKey) fromKDCServer;
-                fromClient = "Ishan";
+                fromClient = clientID;
                 System.out.println("<-Sending ID...");
                 out.writeObject(fromClient);
             }//Sent the ID
