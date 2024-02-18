@@ -62,7 +62,6 @@ public class Client {
 
                 //Let's extract the information from message
                 String[] parts =  ((String) fromBob).split(",");
-                String kdcID = parts[0];
                 String kdcNonce = parts[1];
 
                 //Reply back with Nonce of client & Nonce of KDC
@@ -92,7 +91,7 @@ public class Client {
 
                 //Now will double decrypt
                 String longDecrypt = RSA.decryptLongString(keys.getPrivateKey(),(String)fromBob);
-                SecretKey masterKey = RSA.decryptMasterKey(serverPublicKey,longDecrypt);
+                SecretKey masterKey = KeyGenPair.createMasterKey(RSA.decrypt(serverPublicKey,longDecrypt));
 
                 System.out.println("Got the master key: ");
                 System.out.println(masterKey);

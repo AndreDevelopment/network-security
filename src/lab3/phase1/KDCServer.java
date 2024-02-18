@@ -102,8 +102,10 @@ public class KDCServer {
 
 
                 //Now we should also send the master key
-                SecretKey masterKey = KeyGenPair.createMasterKey();
-                String encryptWithServerPrivKey = RSA.encryptMasterKey(keys.getPrivateKey(),masterKey);
+                String masterKey = RSA.generateMasterKeyString();
+
+
+                String encryptWithServerPrivKey = RSA.encrypt(keys.getPrivateKey(),masterKey);
                 outputLine = RSA.encryptLongString(clientPublicKey,encryptWithServerPrivKey);
 
                 out.writeObject(outputLine);
