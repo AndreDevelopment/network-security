@@ -3,6 +3,7 @@ package lab3;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.security.*;
 
 
@@ -35,15 +36,7 @@ public class KeyGenPair {
         return publicKey;
     }
 
-    public static SecretKey createMasterKey(){
-
-        try {
-            KeyGenerator keyGen = KeyGenerator.getInstance("AES");
-            keyGen.init(128);
-            return keyGen.generateKey();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        return null;
+    public static SecretKey createMasterKey(String masterKey){
+        return  new SecretKeySpec(masterKey.getBytes(), "AES");
     }
 }

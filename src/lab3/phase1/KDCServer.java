@@ -3,125 +3,33 @@ package lab3.phase1;
 
 
 
-import lab3.Colour;
-import lab3.KeyGenPair;
-import lab3.RSA;
+import lab1.sirichat.project2.SiriMultiServerThread;
 
-import javax.crypto.SecretKey;
+
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.security.PublicKey;
 
+import java.net.ServerSocket;
 
 public class KDCServer {
 
-    private static KeyGenPair keys;
-    private static PublicKey clientPublicKey;
+
 
     public static void main(String[] args) throws IOException {
 
-        keys = new KeyGenPair();
+
+
         int portNumber = Integer.parseInt("23456");
+        boolean listening = true;
 
-        try (
-                ServerSocket serverSocket = new ServerSocket(portNumber);
-                Socket clientSocket = serverSocket.accept();
-                ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
-                ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
-
-        ) {
-
-            Object inputLine, outputLine="No object";
-
-
-
-            //Exchange the public keys privately
-            if ((inputLine = in.readObject()) != null) {
-
-                System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM USER: "+Colour.ANSI_RESET);
-                System.out.println("Got: "+inputLine);
-                //Client key has been set
-                clientPublicKey = (PublicKey) inputLine;
-
-                //We must send the server public key
-                outputLine = keys.getPublicKey();
-                out.writeObject(outputLine);
-
-            }//End of key exchange
-
-
-            //Server will receive the client ID
-            if ((inputLine = in.readObject()) != null) {
-
-                System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM USER: "+Colour.ANSI_RESET);
-                System.out.println("Got the ID: "+inputLine);
-
-                //Now reply with KDC Nonce & KDC ID
-                int kdcNonce = RSA.generateNonce();
-                String message = "KDCServer,"+kdcNonce;
-
-                outputLine = RSA.encrypt(clientPublicKey,message);
-
-                out.writeObject(outputLine);
-
-            }//end of sending KDC_Id and KDC_Nonce
-
-
-            //Server will receive the Nonce of Client & Nonce of Server
-            if ((inputLine = in.readObject()) != null) {
-
-                System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM USER: "+Colour.ANSI_RESET);
-                System.out.println("Received encrpyted message: "+inputLine);
-
-                //This should be decrypted
-                inputLine = RSA.decrypt(keys.getPrivateKey(),(String)inputLine);
-                System.out.println("Decrypted Message from Client: "+inputLine);
-
-                //Let's extract the information from message
-                String[] parts =  ((String) inputLine).split(",");
-                //String clientNonce = parts[0];
-                String kdcNonce = parts[1];
-
-                //Let's reply back with KDC Nonce
-                outputLine = RSA.encrypt(clientPublicKey,kdcNonce);
-                out.writeObject(outputLine);
-                System.out.println("Successfully sent the KDC Nonce");
-
-
-
-            }//end of sending just the Server Nonce
-
-            //Server will receive invisible confirm
-            if ((inputLine = in.readObject()) != null) {
-
-                System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM USER: "+Colour.ANSI_RESET);
-                System.out.println("Got the Confirm: "+inputLine);
-
-
-                //Now we should also send the master key
-                SecretKey masterKey = KeyGenPair.createMasterKey();
-                String encryptWithServerPrivKey = RSA.encryptMasterKey(keys.getPrivateKey(),masterKey);
-                outputLine = RSA.encryptLongString(clientPublicKey,encryptWithServerPrivKey);
-
-                out.writeObject(outputLine);
-
-
-            }//end sending the master key
-
-
-
-
-
-
+        try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
+            while (listening) {
+                //Here we accept incoming connections and create a new child socket to be used for each client
+                new KDCServerThread(serverSocket.accept()).start();
+            }
         } catch (IOException e) {
-            System.out.println("Exception caught when trying to listen on port "
-                    + portNumber + " or listening for a connection");
-            System.out.println(e.getMessage());
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            System.err.println("Could not listen on port " + portNumber);
+            System.exit(-1);
         }
     }
-}
+    }
+

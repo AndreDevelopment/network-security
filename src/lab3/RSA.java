@@ -10,12 +10,26 @@ import java.security.NoSuchAlgorithmException;
 
 import java.util.Base64;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public class RSA {
 
     public static int generateNonce(){
 
         return new Random().nextInt(900000) + 100000;
+    }
+
+    public static String generateMasterKeyString() {
+
+        String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        Random random = new Random();
+        int length = 24;
+
+        //Using Streams API to generate a master key string
+        return random.ints(length, 0, alphabet.length())
+                .mapToObj(alphabet::charAt)
+                .map(Object::toString)
+                .collect(Collectors.joining());
     }
     public static byte[] convertToByteArray(Object obj){
 
@@ -52,21 +66,6 @@ public class RSA {
         return "Bad Convert";
     }
 
-    public static SecretKey convertToMasterKey(byte[]arr)  {
-
-        ByteArrayInputStream bis = new ByteArrayInputStream(arr);
-        ObjectInput in;
-        try {
-            in = new ObjectInputStream(bis);
-            return (SecretKey) in.readObject();
-        } catch (IOException  | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
-
-        return null;
-    }
-
 
     public static String encrypt(Key key, String msg){
 
@@ -101,37 +100,7 @@ public class RSA {
     }
 
 
-    public static String encryptMasterKey(Key key, SecretKey masterKey){
 
-        try {
-
-            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-            cipher.init(Cipher.ENCRYPT_MODE,key);
-
-            //This message will contain an encrypted byte array
-            return encode(cipher.doFinal(RSA.convertToByteArray(masterKey)));
-        } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException |
-                 NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        return "Bad Encrypt";
-    }
-
-
-    public static SecretKey decryptMasterKey(Key key, String encryptedBytes){
-
-        try {
-            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-            cipher.init(Cipher.DECRYPT_MODE, key);
-            byte [] objDecrypt = cipher.doFinal(decode(encryptedBytes));
-
-            return RSA.convertToMasterKey(objDecrypt);
-        } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException |
-                 NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     public static String encryptLongString(Key key,String msg){
 
@@ -159,4 +128,6 @@ public class RSA {
     private static byte[] decode(String data) {
         return Base64.getDecoder().decode(data);
     }
+
+
 }
