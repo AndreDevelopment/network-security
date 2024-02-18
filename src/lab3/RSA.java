@@ -1,15 +1,14 @@
 package lab3;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
+import javax.crypto.*;
 
-import java.nio.charset.StandardCharsets;
+
+import java.io.*;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 
+import java.util.Base64;
 import java.util.Random;
 
 public class RSA {
@@ -18,6 +17,56 @@ public class RSA {
 
         return new Random().nextInt(900000) + 100000;
     }
+    public static byte[] convertToByteArray(Object obj){
+
+        try {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(bos);
+            out.writeObject(obj);
+            out.flush();
+            byte[] yourBytes = bos.toByteArray();
+
+            // Always close streams
+            out.close();
+            bos.close();
+
+            return yourBytes;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }//end of byte conversion
+
+    public static String convertToString(byte[]arr)  {
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(arr);
+        ObjectInput in;
+        try {
+            in = new ObjectInputStream(bis);
+            return (String) in.readObject();
+        } catch (IOException  | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+
+        return "Bad Convert";
+    }
+
+    public static SecretKey convertToMasterKey(byte[]arr)  {
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(arr);
+        ObjectInput in;
+        try {
+            in = new ObjectInputStream(bis);
+            return (SecretKey) in.readObject();
+        } catch (IOException  | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+
+        return null;
+    }
+
 
     public static String encrypt(Key key, String msg){
 
@@ -27,7 +76,7 @@ public class RSA {
             cipher.init(Cipher.ENCRYPT_MODE,key);
 
             //This message will contain an encrypted byte array
-            return encode(cipher.doFinal(lab2.project2.RSA.convertToByteArray(msg)));
+            return encode(cipher.doFinal(RSA.convertToByteArray(msg)));
         } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException |
                  NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -43,7 +92,7 @@ public class RSA {
             cipher.init(Cipher.DECRYPT_MODE, key);
             byte [] objDecrypt = cipher.doFinal(decode(encryptedBytes));
 
-            return lab2.project2.RSA.convertToNonce(objDecrypt);
+            return RSA.convertToString(objDecrypt);
         } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException |
                  NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -51,11 +100,63 @@ public class RSA {
         return "Bad Decrypt";
     }
 
-    private static String encode(byte[] data) {
-        return new String(data, StandardCharsets.UTF_8);
+
+    public static String encryptMasterKey(Key key, SecretKey masterKey){
+
+        try {
+
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            cipher.init(Cipher.ENCRYPT_MODE,key);
+
+            //This message will contain an encrypted byte array
+            return encode(cipher.doFinal(RSA.convertToByteArray(masterKey)));
+        } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException |
+                 NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return "Bad Encrypt";
+    }
+
+
+    public static SecretKey decryptMasterKey(Key key, String encryptedBytes){
+
+        try {
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            cipher.init(Cipher.DECRYPT_MODE, key);
+            byte [] objDecrypt = cipher.doFinal(decode(encryptedBytes));
+
+            return RSA.convertToMasterKey(objDecrypt);
+        } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException |
+                 NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static String encryptLongString(Key key,String msg){
+
+        int mid = msg.length() / 2;
+
+        String firstHalf = RSA.encrypt(key,msg.substring(0,mid));
+        String secondHalf = RSA.encrypt(key,msg.substring(mid));
+
+        return firstHalf+secondHalf;
 
     }
+
+    public static String decryptLongString(Key key,String msg){
+        int mid = msg.length() / 2;
+
+        String firstHalf = RSA.decrypt(key,msg.substring(0,mid));
+        String secondHalf = RSA.decrypt(key,msg.substring(mid));
+
+        return firstHalf+secondHalf;
+    }
+
+    private static String encode(byte[] data) {
+        return Base64.getEncoder().encodeToString(data);
+    }
     private static byte[] decode(String data) {
-        return data.getBytes(StandardCharsets.UTF_8);
+        return Base64.getDecoder().decode(data);
     }
 }
