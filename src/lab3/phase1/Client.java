@@ -33,68 +33,74 @@ public class Client {
 
         ) {
 
-            Object fromBob,fromAlice="No object";
+            Object fromKDCServer,fromClient;
 
 
             //Sending the Client public key
-            fromAlice = keys.getPublicKey();
-            out.writeObject(fromAlice);
+            fromClient = keys.getPublicKey();
+            out.writeObject(fromClient);
 
 
             //Receiving Public key of KDC & Sending my ID
-            if ((fromBob = in.readObject()) != null) {
-                System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM SERVER: "+Colour.ANSI_RESET);
-                System.out.println("Got the key:  "+fromBob);
+            if ((fromKDCServer = in.readObject()) != null) {
+//                System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM SERVER: "+Colour.ANSI_RESET);
+//                System.out.println("Got the key:  "+fromKDCServer);
 
-                serverPublicKey = (PublicKey) fromBob;
-
-                fromAlice = "Ishan";
-                out.writeObject(fromAlice);
+                serverPublicKey = (PublicKey) fromKDCServer;
+                fromClient = "Ishan";
+                System.out.println("<-Sending ID...");
+                out.writeObject(fromClient);
             }//Sent the ID
 
-            if ((fromBob = in.readObject()) != null) {
+            if ((fromKDCServer = in.readObject()) != null) {
                 System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM SERVER: "+Colour.ANSI_RESET);
-                System.out.println("Received encrpyted message: "+fromBob);
+                System.out.println(lab2.Colour.ANSI_RED+"[ENCRYPTED]"+ Colour.ANSI_RESET);
+                System.out.println("->"+fromKDCServer);
 
                 //This should be decrypted
-                fromBob = RSA.decrypt(keys.getPrivateKey(),(String)fromBob);
-                System.out.println("Decrypted Message from Server: "+fromBob);
+                fromKDCServer = RSA.decrypt(keys.getPrivateKey(),(String)fromKDCServer);
 
                 //Let's extract the information from message
-                String[] parts =  ((String) fromBob).split(",");
+                String[] parts =  ((String) fromKDCServer).split(",");
+                String kdcID = parts[0];
                 String kdcNonce = parts[1];
+
+                System.out.println(lab2.Colour.ANSI_CYAN+"[DECRYPTED]"+ Colour.ANSI_RESET);
+                System.out.println("->KDC ID: "+kdcID+" KDC Nonce: "+kdcNonce);
 
                 //Reply back with Nonce of client & Nonce of KDC
                 int clientNonce = RSA.generateNonce();
-                fromAlice =  RSA.encrypt(serverPublicKey, clientNonce+","+kdcNonce);
-
-                out.writeObject(fromAlice);
+                System.out.println("[GENERATED] Client Nonce: "+clientNonce);
+                fromClient =  RSA.encrypt(serverPublicKey, clientNonce+","+kdcNonce);
+                System.out.println("<-Sending encrypted Client Nonce & KDC Nonce...");
+                out.writeObject(fromClient);
             }//Sent the Nonce of client & Nonce of KDC
 
 
             //Received the server Nonce
-            if ((fromBob = in.readObject()) != null) {
+            if ((fromKDCServer = in.readObject()) != null) {
                 System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM SERVER: "+Colour.ANSI_RESET);
-                System.out.println("Received encrpyted message: "+fromBob);
-
+                System.out.println(lab2.Colour.ANSI_RED+"[ENCRYPTED]"+ lab2.Colour.ANSI_RESET);
+                System.out.println("->"+fromKDCServer);
                 //This should be just the server Nonce
-                fromBob = RSA.decrypt(keys.getPrivateKey(),(String)fromBob);
-                System.out.println("Decrypted Message from Server Nonce: "+fromBob);
+                fromKDCServer = RSA.decrypt(keys.getPrivateKey(),(String)fromKDCServer);
+                System.out.println(lab2.Colour.ANSI_CYAN+"[DECRYPTED]\n"+ Colour.ANSI_RESET+"->KDC Nonce: "+fromKDCServer);
 
                 out.writeObject("Confirming message...");
             }//Sent the Nonce of client & Nonce of KDC
 
             //Now we should receive a double encrypted message from Server
-            if ((fromBob = in.readObject()) != null) {
+            if ((fromKDCServer = in.readObject()) != null) {
                 System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM SERVER: "+Colour.ANSI_RESET);
-                System.out.println("Received double encrpyted message: "+fromBob);
+                System.out.println(lab2.Colour.ANSI_RED+"[ENCRYPTEDx2]"+ Colour.ANSI_RESET);
+                System.out.println("->"+fromKDCServer);
 
                 //Now will double decrypt
-                String longDecrypt = RSA.decryptLongString(keys.getPrivateKey(),(String)fromBob);
+                String longDecrypt = RSA.decryptLongString(keys.getPrivateKey(),(String)fromKDCServer);
                 SecretKey masterKey = KeyGenPair.createMasterKey(RSA.decrypt(serverPublicKey,longDecrypt));
+                System.out.println(lab2.Colour.ANSI_CYAN+"[DECRYPTEDx2]"+ lab2.Colour.ANSI_RESET);
+                System.out.println("->Master Key: "+masterKey);
 
-                System.out.println("Got the master key: ");
-                System.out.println(masterKey);
 
             }//Completion of Phase 1
 
