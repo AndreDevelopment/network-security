@@ -4,18 +4,26 @@ package lab3.phase1;
 
 
 import lab3.Colour;
+import lab3.KeyGenPair;
+import lab3.RSA;
 
+import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.PublicKey;
 
 
 public class KDCServer {
 
+    private static KeyGenPair keys;
+    private static PublicKey clientPublicKey;
+
     public static void main(String[] args) throws IOException {
 
+        keys = new KeyGenPair();
         int portNumber = Integer.parseInt("23456");
 
         try (
@@ -30,16 +38,84 @@ public class KDCServer {
 
 
 
-            //BEGIN SERVER WHILE
-            while ((inputLine = in.readObject()) != null) {
+            //Exchange the public keys privately
+            if ((inputLine = in.readObject()) != null) {
 
                 System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM USER: "+Colour.ANSI_RESET);
+                System.out.println("Got: "+inputLine);
+                //Client key has been set
+                clientPublicKey = (PublicKey) inputLine;
+
+                //We must send the server public key
+                outputLine = keys.getPublicKey();
+                out.writeObject(outputLine);
+
+            }//End of key exchange
 
 
+            //Server will receive the client ID
+            if ((inputLine = in.readObject()) != null) {
+
+                System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM USER: "+Colour.ANSI_RESET);
+                System.out.println("Got the ID: "+inputLine);
+
+                //Now reply with KDC Nonce & KDC ID
+                int kdcNonce = RSA.generateNonce();
+                String message = "KDCServer,"+kdcNonce;
+
+                outputLine = RSA.encrypt(clientPublicKey,message);
 
                 out.writeObject(outputLine);
 
-            }//end of Server while
+            }//end of sending KDC_Id and KDC_Nonce
+
+
+            //Server will receive the Nonce of Client & Nonce of Server
+            if ((inputLine = in.readObject()) != null) {
+
+                System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM USER: "+Colour.ANSI_RESET);
+                System.out.println("Received encrpyted message: "+inputLine);
+
+                //This should be decrypted
+                inputLine = RSA.decrypt(keys.getPrivateKey(),(String)inputLine);
+                System.out.println("Decrypted Message from Client: "+inputLine);
+
+                //Let's extract the information from message
+                String[] parts =  ((String) inputLine).split(",");
+                //String clientNonce = parts[0];
+                String kdcNonce = parts[1];
+
+                //Let's reply back with KDC Nonce
+                outputLine = RSA.encrypt(clientPublicKey,kdcNonce);
+                out.writeObject(outputLine);
+                System.out.println("Successfully sent the KDC Nonce");
+
+
+
+            }//end of sending just the Server Nonce
+
+            //Server will receive invisible confirm
+            if ((inputLine = in.readObject()) != null) {
+
+                System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM USER: "+Colour.ANSI_RESET);
+                System.out.println("Got the Confirm: "+inputLine);
+
+
+                //Now we should also send the master key
+                SecretKey masterKey = KeyGenPair.createMasterKey();
+                String encryptWithServerPrivKey = RSA.encryptMasterKey(keys.getPrivateKey(),masterKey);
+                outputLine = RSA.encryptLongString(clientPublicKey,encryptWithServerPrivKey);
+
+                out.writeObject(outputLine);
+
+
+            }//end sending the master key
+
+
+
+
+
+
         } catch (IOException e) {
             System.out.println("Exception caught when trying to listen on port "
                     + portNumber + " or listening for a connection");
