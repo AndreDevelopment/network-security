@@ -1,7 +1,9 @@
-package lab3.phase1;
+package lab3.phase2;
+
 import lab3.Colour;
 import lab3.KeyGenPair;
 import lab3.RSA;
+
 import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -11,7 +13,7 @@ import java.net.UnknownHostException;
 import java.security.PublicKey;
 import java.util.Scanner;
 
-public class Client {
+public class ClientB {
 
     private static KeyGenPair keys;
     private static PublicKey serverPublicKey;
@@ -31,14 +33,14 @@ public class Client {
 
         ) {
 
-            Object fromKDCServer,fromClient;
+            Object fromKDCServer,fromClientB;
             Scanner scan = new Scanner(System.in);
-            System.out.println("Enter the client ID: ");
-            String clientID = scan.nextLine();
+            System.out.println("Enter the ClientB ID: ");
+            String ClientBID = scan.nextLine();
 
-            //Sending the Client public key
-            fromClient = keys.getPublicKey();
-            out.writeObject(fromClient);
+            //Sending the ClientB public key
+            fromClientB = keys.getPublicKey();
+            out.writeObject(fromClientB);
 
 
             //Receiving Public key of KDC & Sending my ID
@@ -47,9 +49,9 @@ public class Client {
 //                System.out.println("Got the key:  "+fromKDCServer);
 
                 serverPublicKey = (PublicKey) fromKDCServer;
-                fromClient = clientID;
+                fromClientB = ClientBID;
                 System.out.println("<-Sending ID...");
-                out.writeObject(fromClient);
+                out.writeObject(fromClientB);
             }//Sent the ID
 
             if ((fromKDCServer = in.readObject()) != null) {
@@ -68,13 +70,13 @@ public class Client {
                 System.out.println(lab2.Colour.ANSI_CYAN+"[DECRYPTED]"+ Colour.ANSI_RESET);
                 System.out.println("->KDC ID: "+kdcID+" KDC Nonce: "+kdcNonce);
 
-                //Reply back with Nonce of client & Nonce of KDC
-                int clientNonce = RSA.generateNonce();
-                System.out.println("[GENERATED] Client Nonce: "+clientNonce);
-                fromClient =  RSA.encrypt(serverPublicKey, clientNonce+","+kdcNonce);
-                System.out.println("<-Sending encrypted Client Nonce & KDC Nonce...");
-                out.writeObject(fromClient);
-            }//Sent the Nonce of client & Nonce of KDC
+                //Reply back with Nonce of ClientB & Nonce of KDC
+                int ClientBNonce = RSA.generateNonce();
+                System.out.println("[GENERATED] ClientB Nonce: "+ClientBNonce);
+                fromClientB =  RSA.encrypt(serverPublicKey, ClientBNonce+","+kdcNonce);
+                System.out.println("<-Sending encrypted ClientB Nonce & KDC Nonce...");
+                out.writeObject(fromClientB);
+            }//Sent the Nonce of ClientB & Nonce of KDC
 
 
             //Received the server Nonce
@@ -87,7 +89,7 @@ public class Client {
                 System.out.println(lab2.Colour.ANSI_CYAN+"[DECRYPTED]\n"+ Colour.ANSI_RESET+"->KDC Nonce: "+fromKDCServer);
 
                 out.writeObject("Confirming message...");
-            }//Sent the Nonce of client & Nonce of KDC
+            }//Sent the Nonce of ClientB & Nonce of KDC
 
             //Now we should receive a double encrypted message from Server
             if ((fromKDCServer = in.readObject()) != null) {
@@ -103,6 +105,13 @@ public class Client {
 
 
             }//Completion of Phase 1
+
+            // Now ClientB sends its ID to KDCServerThread
+            System.out.println("Enter the ClientB ID: ");
+            String clientBID = scan.nextLine();
+            fromClientB = clientBID;
+            System.out.println("<-Sending ID to KDCServerThread...");
+            out.writeObject(fromClientB);
 
 
         } catch (UnknownHostException e) {
