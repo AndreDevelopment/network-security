@@ -127,7 +127,7 @@ public class ClientA {
 
                 System.out.println("->Client ID: "+otherClientID);
                 System.out.println("->Shared Key: "+actualSharedKey);
-
+                System.out.println(" ");
 
             }//Phase 2 complete
 

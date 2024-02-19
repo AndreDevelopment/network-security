@@ -23,7 +23,8 @@ public class ClientB {
         keys =  new KeyGenPair();
 
         String hostName = "localhost";
-        int portNumber = Integer.parseInt("23456");
+        // New port number for client B
+        int portNumber = Integer.parseInt("23457");
 
         try (
                 Socket aliceSocket = new Socket(hostName, portNumber);
@@ -127,7 +128,7 @@ public class ClientB {
 
                 System.out.println("->Client ID: "+otherClientID);
                 System.out.println("->Shared Key: "+actualSharedKey);
-
+                System.out.println(" ");
 
             }//Phase 2 complete
 
