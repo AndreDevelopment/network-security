@@ -39,4 +39,9 @@ public class KeyGenPair {
     public static SecretKey createMasterKey(String masterKey){
         return  new SecretKeySpec(masterKey.getBytes(), "AES");
     }
+
+    public static SecretKey createSharedKey(String sharedKey){
+        //"thisismysecretkey24bytes"
+        return  new SecretKeySpec(sharedKey.getBytes(), "AES");
+    }
 }

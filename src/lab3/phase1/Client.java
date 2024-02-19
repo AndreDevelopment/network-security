@@ -58,7 +58,7 @@ public class Client {
                 System.out.println("->"+fromKDCServer);
 
                 //This should be decrypted
-                fromKDCServer = RSA.decrypt(keys.getPrivateKey(),(String)fromKDCServer);
+                fromKDCServer = RSA.decrypt(keys.getPrivateKey(),(String)fromKDCServer,"RSA/ECB/PKCS1Padding");
 
                 //Let's extract the information from message
                 String[] parts =  ((String) fromKDCServer).split(",");
@@ -71,7 +71,7 @@ public class Client {
                 //Reply back with Nonce of client & Nonce of KDC
                 int clientNonce = RSA.generateNonce();
                 System.out.println("[GENERATED] Client Nonce: "+clientNonce);
-                fromClient =  RSA.encrypt(serverPublicKey, clientNonce+","+kdcNonce);
+                fromClient =  RSA.encrypt(serverPublicKey, clientNonce+","+kdcNonce,"RSA/ECB/PKCS1Padding");
                 System.out.println("<-Sending encrypted Client Nonce & KDC Nonce...");
                 out.writeObject(fromClient);
             }//Sent the Nonce of client & Nonce of KDC
@@ -83,7 +83,7 @@ public class Client {
                 System.out.println(lab2.Colour.ANSI_RED+"[ENCRYPTED]"+ lab2.Colour.ANSI_RESET);
                 System.out.println("->"+fromKDCServer);
                 //This should be just the server Nonce
-                fromKDCServer = RSA.decrypt(keys.getPrivateKey(),(String)fromKDCServer);
+                fromKDCServer = RSA.decrypt(keys.getPrivateKey(),(String)fromKDCServer,"RSA/ECB/PKCS1Padding");
                 System.out.println(lab2.Colour.ANSI_CYAN+"[DECRYPTED]\n"+ Colour.ANSI_RESET+"->KDC Nonce: "+fromKDCServer);
 
                 out.writeObject("Confirming message...");
@@ -96,8 +96,8 @@ public class Client {
                 System.out.println("->"+fromKDCServer);
 
                 //Now will double decrypt
-                String longDecrypt = RSA.decryptLongString(keys.getPrivateKey(),(String)fromKDCServer);
-                SecretKey masterKey = KeyGenPair.createMasterKey(RSA.decrypt(serverPublicKey,longDecrypt));
+                String longDecrypt = RSA.decryptLongString(keys.getPrivateKey(),(String)fromKDCServer,"RSA/ECB/PKCS1Padding");
+                SecretKey masterKey = KeyGenPair.createMasterKey(RSA.decrypt(serverPublicKey,longDecrypt,"RSA/ECB/PKCS1Padding"));
                 System.out.println(lab2.Colour.ANSI_CYAN+"[DECRYPTEDx2]"+ lab2.Colour.ANSI_RESET);
                 System.out.println("->Master Key: "+masterKey);
 

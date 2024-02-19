@@ -10,8 +10,6 @@ public class KDCServer {
 
     public static void main(String[] args) throws IOException {
 
-
-
         int portNumber = Integer.parseInt("23456");
         boolean listening = true;
 

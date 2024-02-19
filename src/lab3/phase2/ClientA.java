@@ -34,10 +34,8 @@ public class ClientA {
         ) {
 
             Object fromKDCServer,fromClientA;
-            Scanner scan = new Scanner(System.in);
-            System.out.println("Enter the ClientA ID: ");
-            String ClientAID = scan.nextLine();
-
+            String ClientAID = "Alice",ClientBID = "Bob";
+            SecretKey masterKey = null;
             //Sending the ClientA public key
             fromClientA = keys.getPublicKey();
             out.writeObject(fromClientA);
@@ -60,7 +58,7 @@ public class ClientA {
                 System.out.println("->"+fromKDCServer);
 
                 //This should be decrypted
-                fromKDCServer = RSA.decrypt(keys.getPrivateKey(),(String)fromKDCServer);
+                fromKDCServer = RSA.decrypt(keys.getPrivateKey(),(String)fromKDCServer,"RSA/ECB/PKCS1Padding");
 
                 //Let's extract the information from message
                 String[] parts =  ((String) fromKDCServer).split(",");
@@ -73,7 +71,7 @@ public class ClientA {
                 //Reply back with Nonce of ClientA & Nonce of KDC
                 int ClientANonce = RSA.generateNonce();
                 System.out.println("[GENERATED] ClientA Nonce: "+ClientANonce);
-                fromClientA =  RSA.encrypt(serverPublicKey, ClientANonce+","+kdcNonce);
+                fromClientA =  RSA.encrypt(serverPublicKey, ClientANonce+","+kdcNonce,"RSA/ECB/PKCS1Padding");
                 System.out.println("<-Sending encrypted ClientA Nonce & KDC Nonce...");
                 out.writeObject(fromClientA);
             }//Sent the Nonce of ClientA & Nonce of KDC
@@ -85,8 +83,8 @@ public class ClientA {
                 System.out.println(lab2.Colour.ANSI_RED+"[ENCRYPTED]"+ lab2.Colour.ANSI_RESET);
                 System.out.println("->"+fromKDCServer);
                 //This should be just the server Nonce
-                fromKDCServer = RSA.decrypt(keys.getPrivateKey(),(String)fromKDCServer);
-                System.out.println(lab2.Colour.ANSI_CYAN+"[DECRYPTED]\n"+ Colour.ANSI_RESET+"->KDC Nonce: "+fromKDCServer);
+                fromKDCServer = RSA.decrypt(keys.getPrivateKey(),(String)fromKDCServer,"RSA/ECB/PKCS1Padding");
+                System.out.println(Colour.ANSI_CYAN+"[DECRYPTED]\n"+ Colour.ANSI_RESET+"->KDC Nonce: "+fromKDCServer);
 
                 out.writeObject("Confirming message...");
             }//Sent the Nonce of ClientA & Nonce of KDC
@@ -98,19 +96,49 @@ public class ClientA {
                 System.out.println("->"+fromKDCServer);
 
                 //Now will double decrypt
-                String longDecrypt = RSA.decryptLongString(keys.getPrivateKey(),(String)fromKDCServer);
-                SecretKey masterKey = KeyGenPair.createMasterKey(RSA.decrypt(serverPublicKey,longDecrypt));
+                String longDecrypt = RSA.decryptLongString(keys.getPrivateKey(),(String)fromKDCServer,"RSA/ECB/PKCS1Padding");
+                masterKey = KeyGenPair.createMasterKey(RSA.decrypt(serverPublicKey,longDecrypt,"RSA/ECB/PKCS1Padding"));
                 System.out.println(lab2.Colour.ANSI_CYAN+"[DECRYPTEDx2]"+ lab2.Colour.ANSI_RESET);
                 System.out.println("->Master Key: "+masterKey);
 
 
+                System.out.println(Colour.ANSI_PURPLE+"\nBEGIN PHASE 2\n"+Colour.ANSI_RESET);
+
+                // Now ClientB sends its ID to KDCServerThread
+                System.out.println("<-Sending IDs to KDCServerThread...");
+                out.writeObject(ClientBID);
+
+
             }//Completion of Phase 1
 
-            // Receiving the ClientB ID from KDCServerThread
+            //Finishing Phase 2
             if ((fromKDCServer = in.readObject()) != null) {
-                System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM KDCServerThread: "+Colour.ANSI_RESET);
-                System.out.println("->ClientB ID: "+fromKDCServer);
-            }
+                System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM SERVER: "+Colour.ANSI_RESET);
+                System.out.println(lab2.Colour.ANSI_RED+"[ENCRYPTED]"+ lab2.Colour.ANSI_RESET);
+                System.out.println("->"+fromKDCServer);
+
+                //This should be a key and ID
+                fromKDCServer = RSA.decrypt(masterKey,(String)fromKDCServer,"AES");
+                String[] parts =  ((String) fromKDCServer).split(",");
+                String sharedKey = parts[0];
+                String otherClientID = parts[1];
+
+                SecretKey actualSharedKey = KeyGenPair.createSharedKey(sharedKey);
+
+                System.out.println("->Client ID: "+otherClientID);
+                System.out.println("->Shared Key: "+actualSharedKey);
+
+
+            }//Phase 2 complete
+
+
+
+
+            // Receiving the ClientB ID from KDCServerThread
+//            if ((fromKDCServer = in.readObject()) != null) {
+//                System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM KDCServerThread: "+Colour.ANSI_RESET);
+//                System.out.println("->ClientB ID: "+fromKDCServer);
+//            }
 
         } catch (UnknownHostException e) {
             System.err.println("Don't know about host " + hostName);

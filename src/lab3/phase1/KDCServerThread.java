@@ -7,7 +7,7 @@ import lab3.RSA;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.ServerSocket;
+
 import java.net.Socket;
 import java.security.PublicKey;
 
@@ -63,7 +63,7 @@ public class KDCServerThread extends  Thread{
                 int kdcNonce = RSA.generateNonce();
                 System.out.println("[GENERATED] KDC Nonce: "+kdcNonce);
                 String message = "KDCServer,"+kdcNonce;
-                outputLine = RSA.encrypt(clientPublicKey,message);
+                outputLine = RSA.encrypt(clientPublicKey,message,"RSA/ECB/PKCS1Padding");
                 System.out.println("<-Sending encrypted ID & Nonce...");
 
                 out.writeObject(outputLine);
@@ -79,7 +79,7 @@ public class KDCServerThread extends  Thread{
                 System.out.println("->"+inputLine);
 
                 //This should be decrypted
-                inputLine = RSA.decrypt(keys.getPrivateKey(),(String)inputLine);
+                inputLine = RSA.decrypt(keys.getPrivateKey(),(String)inputLine,"RSA/ECB/PKCS1Padding");
 
 
                 //Let's extract the information from message
@@ -91,7 +91,7 @@ public class KDCServerThread extends  Thread{
                 System.out.println("->Client Nonce: "+clientNonce+" KDC Nonce: "+kdcNonce);
 
                 //Let's reply back with KDC Nonce
-                outputLine = RSA.encrypt(clientPublicKey,kdcNonce);
+                outputLine = RSA.encrypt(clientPublicKey,kdcNonce,"RSA/ECB/PKCS1Padding");
                 out.writeObject(outputLine);
                 System.out.println("<-Sending encrypted KDC Nonce...");
 
@@ -108,8 +108,8 @@ public class KDCServerThread extends  Thread{
                 //Now we should also send the master key
                 String masterKey = RSA.generateMasterKeyString();
 
-                String encryptMasterKey = RSA.encrypt(keys.getPrivateKey(),masterKey);
-                outputLine = RSA.encryptLongString(clientPublicKey,encryptMasterKey);
+                String encryptMasterKey = RSA.encrypt(keys.getPrivateKey(),masterKey,"RSA/ECB/PKCS1Padding");
+                outputLine = RSA.encryptLongString(clientPublicKey,encryptMasterKey,"RSA/ECB/PKCS1Padding");
 
                 out.writeObject(outputLine);
                 System.out.println("<-Sending the Master Key...");

@@ -67,11 +67,13 @@ public class RSA {
     }
 
 
-    public static String encrypt(Key key, String msg){
+    public static String encrypt(Key key, String msg,String transformation){
 
+        //"RSA/ECB/PKCS1Padding"
+        //"AES"
         try {
 
-            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            Cipher cipher = Cipher.getInstance(transformation);
             cipher.init(Cipher.ENCRYPT_MODE,key);
 
             //This message will contain an encrypted byte array
@@ -84,10 +86,13 @@ public class RSA {
     }
 
 
-    public static String decrypt(Key key, String encryptedBytes){
+    public static String decrypt(Key key, String encryptedBytes,String transformation){
+
+        //"RSA/ECB/PKCS1Padding"
+        //"AES"
 
         try {
-            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            Cipher cipher = Cipher.getInstance(transformation);
             cipher.init(Cipher.DECRYPT_MODE, key);
             byte [] objDecrypt = cipher.doFinal(decode(encryptedBytes));
 
@@ -102,22 +107,22 @@ public class RSA {
 
 
 
-    public static String encryptLongString(Key key,String msg){
+    public static String encryptLongString(Key key,String msg,String transformation){
 
         int mid = msg.length() / 2;
 
-        String firstHalf = RSA.encrypt(key,msg.substring(0,mid));
-        String secondHalf = RSA.encrypt(key,msg.substring(mid));
+        String firstHalf = RSA.encrypt(key,msg.substring(0,mid),transformation);
+        String secondHalf = RSA.encrypt(key,msg.substring(mid),transformation);
 
         return firstHalf+secondHalf;
 
     }
 
-    public static String decryptLongString(Key key,String msg){
+    public static String decryptLongString(Key key,String msg,String transformation){
         int mid = msg.length() / 2;
 
-        String firstHalf = RSA.decrypt(key,msg.substring(0,mid));
-        String secondHalf = RSA.decrypt(key,msg.substring(mid));
+        String firstHalf = RSA.decrypt(key,msg.substring(0,mid),transformation);
+        String secondHalf = RSA.decrypt(key,msg.substring(mid),transformation);
 
         return firstHalf+secondHalf;
     }

@@ -35,9 +35,7 @@ public class KDCServerThread extends  Thread{
         ) {
 
             Object inputLine, outputLine;
-
-
-
+            String masterKey="";
             //Exchange the public keys privately
             if ((inputLine = in.readObject()) != null) {
 
@@ -62,7 +60,7 @@ public class KDCServerThread extends  Thread{
                 int kdcNonce = RSA.generateNonce();
                 System.out.println("[GENERATED] KDC Nonce: "+kdcNonce);
                 String message = "KDCServer,"+kdcNonce;
-                outputLine = RSA.encrypt(clientPublicKey,message);
+                outputLine = RSA.encrypt(clientPublicKey,message,"RSA/ECB/PKCS1Padding");
                 System.out.println("<-Sending encrypted ID & Nonce...");
 
                 out.writeObject(outputLine);
@@ -78,7 +76,7 @@ public class KDCServerThread extends  Thread{
                 System.out.println("->"+inputLine);
 
                 //This should be decrypted
-                inputLine = RSA.decrypt(keys.getPrivateKey(),(String)inputLine);
+                inputLine = RSA.decrypt(keys.getPrivateKey(),(String)inputLine,"RSA/ECB/PKCS1Padding");
 
 
                 //Let's extract the information from message
@@ -90,7 +88,7 @@ public class KDCServerThread extends  Thread{
                 System.out.println("->Client Nonce: "+clientNonce+" KDC Nonce: "+kdcNonce);
 
                 //Let's reply back with KDC Nonce
-                outputLine = RSA.encrypt(clientPublicKey,kdcNonce);
+                outputLine = RSA.encrypt(clientPublicKey,kdcNonce,"RSA/ECB/PKCS1Padding");
                 out.writeObject(outputLine);
                 System.out.println("<-Sending encrypted KDC Nonce...");
 
@@ -105,10 +103,10 @@ public class KDCServerThread extends  Thread{
 //                System.out.println("Got the Confirm: "+inputLine);
 
                 //Now we should also send the master key
-                String masterKey = RSA.generateMasterKeyString();
+                masterKey = RSA.generateMasterKeyString();
 
-                String encryptMasterKey = RSA.encrypt(keys.getPrivateKey(),masterKey);
-                outputLine = RSA.encryptLongString(clientPublicKey,encryptMasterKey);
+                String encryptMasterKey = RSA.encrypt(keys.getPrivateKey(),masterKey,"RSA/ECB/PKCS1Padding");
+                outputLine = RSA.encryptLongString(clientPublicKey,encryptMasterKey,"RSA/ECB/PKCS1Padding");
 
                 out.writeObject(outputLine);
                 System.out.println("<-Sending the Master Key...");
@@ -119,11 +117,21 @@ public class KDCServerThread extends  Thread{
             // Recieving ID from ClientB, forwarding it to ClientA
             if ((inputLine = in.readObject()) != null) {
                 System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM CLIENTB: "+Colour.ANSI_RESET);
-                System.out.println("->ClientB ID: "+inputLine);
 
-                // Now send this ID to ClientA
+                String ClientGeneralID = (String) inputLine;
+
+
+                System.out.println("->ClientA ID: "+"Alice");
+                System.out.println("->ClientB ID: "+"Bob");
+
+                //Let's set up the keys and send
+                String keyAB = "thisismysecretkey24bytes";
+                String msg = keyAB+","+ClientGeneralID;
+                inputLine = RSA.encrypt(KeyGenPair.createMasterKey(masterKey),msg,"AES");
+
+                // Now send this ID & Client
                 out.writeObject(inputLine);
-                System.out.println("<-Sending ClientB ID to ClientA...");
+                System.out.println("<-Sending Encrypted Keys...");
             }
 
             clientSocket.close();
