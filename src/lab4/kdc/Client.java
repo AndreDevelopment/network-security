@@ -48,9 +48,6 @@ public class Client {
 
             //Receiving Public key of KDC & Sending my ID
             if ((fromKDCServer = in.readObject()) != null) {
-//                System.out.println(Colour.ANSI_GREEN+"RECEIVED FROM SERVER: "+Colour.ANSI_RESET);
-//                System.out.println("Got the key:  "+fromKDCServer);
-
                 serverPublicKey = (PublicKey) fromKDCServer;
                 fromClient = clientID;
                 System.out.println("<-Sending ID...");

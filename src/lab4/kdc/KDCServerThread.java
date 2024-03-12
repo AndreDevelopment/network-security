@@ -17,9 +17,8 @@ import java.util.concurrent.CountDownLatch;
 public class KDCServerThread extends Thread {
     private KeyGenPair keys;
     private  PublicKey clientPublicKey;
-    private Socket clientSocket;
+    private final Socket clientSocket;
     private String clientID;
-
     private static CountDownLatch latch;
 
     private static List<KDCServerThread> clientList;
@@ -29,12 +28,15 @@ public class KDCServerThread extends Thread {
         if (clientList==null)
             clientList = new ArrayList<>();
         if (latch==null)
-            latch = new CountDownLatch(2);
+            latch = new CountDownLatch(3);
         clientList.add(this);
     }
 
     @Override
     public void run() {
+
+
+
 
         keys = new KeyGenPair();
 
@@ -57,11 +59,6 @@ public class KDCServerThread extends Thread {
             if ((inputLine = in.readObject()) != null) {
                 System.out.println(Colour.ANSI_GREEN + "RECEIVED FROM USER: " + Colour.ANSI_RESET);
                 clientID = (String)inputLine;
-                //Add to the list and notify other threads of the update
-//                synchronized (userIds) {
-//                    notifyAll(); // Notify all waiting threads (consumer)
-//                }
-
 
                 System.out.println("->Client ID: " + inputLine);
 
@@ -112,16 +109,19 @@ public class KDCServerThread extends Thread {
             if ((inputLine = in.readObject()) != null) {
                 System.out.println(Colour.ANSI_GREEN + "RECEIVED FROM CLIENT: " + Colour.ANSI_RESET);
 
-                String otherClientID="rand",clientGeneralID = (String) inputLine;
+                StringBuilder otherClientID= new StringBuilder("");
+                String clientGeneralID = (String) inputLine;
 
                 //This code will search for the opposing users ID provided we only have 2 users
 
-                System.out.println("->ClientA ID: " + clientGeneralID);
+                System.out.println("->Client Main ID: " + clientGeneralID);
                 for (KDCServerThread client: clientList) {
-                    if (!client.getClientId().equals(clientGeneralID))
-                        otherClientID=client.getClientId();
+                    if (!client.getClientId().equals(clientGeneralID)){
+                        System.out.println("->Client Other ID: " + client.getClientId());
+                        otherClientID.append(client.getClientId()).append(",");
+                    }
                 }
-                System.out.println("->ClientB ID: " + otherClientID);
+
 
 
                 //Setting up Ks
@@ -147,5 +147,7 @@ public class KDCServerThread extends Thread {
     public String getClientId(){
         return clientID;
     }
+
+
 
 }
