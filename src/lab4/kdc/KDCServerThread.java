@@ -12,6 +12,7 @@ import java.net.Socket;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 public class KDCServerThread extends Thread {
     private KeyGenPair keys;
@@ -19,17 +20,22 @@ public class KDCServerThread extends Thread {
     private Socket clientSocket;
     private String clientID;
 
-    //private static List<KDCServerThread> clientList;
+    private static CountDownLatch latch;
 
-    public static List<String> userIds;
+    private static List<KDCServerThread> clientList;
+
     public KDCServerThread(Socket socket) {
         clientSocket = socket;
-        if (userIds==null)
-            userIds = new ArrayList<>();
+        if (clientList==null)
+            clientList = new ArrayList<>();
+        if (latch==null)
+            latch = new CountDownLatch(2);
+        clientList.add(this);
     }
 
     @Override
     public void run() {
+
         keys = new KeyGenPair();
 
         try (
@@ -52,7 +58,6 @@ public class KDCServerThread extends Thread {
                 System.out.println(Colour.ANSI_GREEN + "RECEIVED FROM USER: " + Colour.ANSI_RESET);
                 clientID = (String)inputLine;
                 //Add to the list and notify other threads of the update
-                userIds.add(clientID);
 //                synchronized (userIds) {
 //                    notifyAll(); // Notify all waiting threads (consumer)
 //                }
@@ -95,35 +100,26 @@ public class KDCServerThread extends Thread {
                 outputLine = RSA.encryptLongString(clientPublicKey, encryptMasterKey, "RSA/ECB/PKCS1Padding");
                 out.writeObject(outputLine);
                 System.out.println("<-Sending the Master Key...");
-            }
+            }// Receive ID from ClientB, forward it to ClientA
 
-            // Receive ID from ClientB, forward it to ClientA
+            //Need to wait until both users are done phase 1 to begin phase 2
+            latch.countDown();
+            latch.await();
 
             System.out.println(Colour.ANSI_PURPLE+"\nBEGIN PHASE 2\n"+ Colour.ANSI_RESET);
+
+
             if ((inputLine = in.readObject()) != null) {
                 System.out.println(Colour.ANSI_GREEN + "RECEIVED FROM CLIENT: " + Colour.ANSI_RESET);
 
                 String otherClientID="rand",clientGeneralID = (String) inputLine;
 
-                //Need to wait until both users are done phase 1 to begin phase 2
-
-
-
-//                while (userIds.size()<=1){
-////                    synchronized (userIds) { // Synchronize on the list for thread safety
-////                        try {
-////                            wait(); // Wait until notified by the producer
-////                        } catch (InterruptedException e) {
-////                            e.printStackTrace();
-////                        }
-////                    }
-//                }
-
                 //This code will search for the opposing users ID provided we only have 2 users
+
                 System.out.println("->ClientA ID: " + clientGeneralID);
-                for (String id: userIds) {
-                    if (!id.equals(clientGeneralID))
-                        otherClientID=id;
+                for (KDCServerThread client: clientList) {
+                    if (!client.getClientId().equals(clientGeneralID))
+                        otherClientID=client.getClientId();
                 }
                 System.out.println("->ClientB ID: " + otherClientID);
 
@@ -144,10 +140,12 @@ public class KDCServerThread extends Thread {
 
         } catch (IOException e) {
             System.out.println(e.getMessage());
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | InterruptedException e) {
             e.printStackTrace();
         }
     }// end of main
-
+    public String getClientId(){
+        return clientID;
+    }
 
 }
