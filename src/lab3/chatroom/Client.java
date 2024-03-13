@@ -45,23 +45,20 @@ public class Client {
 
     public void listenForMessage() {
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
+        new Thread(() -> {
 
-                try {
-                    String messageFromGC;
-                    while (socket.isConnected()) {
-                        messageFromGC = br.readLine();
-                        if (messageFromGC == null) {
-                            break;
-                        }
-                        System.out.println(messageFromGC);
-                    }//end of while
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    closeEverything();
-                }
+            try {
+                String messageFromGC;
+                while (socket.isConnected()) {
+                    messageFromGC = br.readLine();
+                    if (messageFromGC == null) {
+                        break;
+                    }
+                    System.out.println(messageFromGC);
+                }//end of while
+            } catch (IOException e) {
+                e.printStackTrace();
+                closeEverything();
             }
         }).start();
 
